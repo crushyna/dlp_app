@@ -4,8 +4,8 @@ from functions.excel_importer import ExcelProcessingObject
 
 
 def main(
-        filename: str = typer.Argument(..., help="Filename to process. DO NOT enter filepath!"),
-        settings_file: str = typer.Argument(..., help="Settings filename. DO NOT enter filepath!"),
+        filename: str = typer.Argument(..., help="Filename to process with extension. DO NOT enter filepath!"),
+        settings_file: str = typer.Argument(..., help="Settings filename with extension. DO NOT enter filepath!"),
 ):
     typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
 
