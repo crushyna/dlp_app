@@ -3,13 +3,13 @@ from config.config_parser import LocalizationProcessingSettings
 
 
 def main(
-        country: str = typer.Argument(..., help="Country name"),
-        manufacturer: str = typer.Argument(..., help="Manufacturer name"),
         filename: str = typer.Argument(..., help="Filename to process. DO NOT enter filepath!"),
+        settings_file: str = typer.Argument(..., help="Settings filename. DO NOT enter filepath!"),
         ):
-    typer.echo(f"{country}, {manufacturer}, {filename}")
-    processing_settings = LocalizationProcessingSettings('ua_default.ini')
+    typer.echo(f"{filename}, {settings_file}")
+    processing_settings = LocalizationProcessingSettings(settings_file)
     typer.echo(processing_settings.__dict__)
+
 
 
 if __name__ == '__main__':
