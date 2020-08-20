@@ -36,6 +36,7 @@ class LocalizationProcessingSettings:
         self.names = config['COUNTRY_SETTINGS']['names']
         self.index_col = config['COUNTRY_SETTINGS']['index_col']
         self.skiprows = int(config['COUNTRY_SETTINGS']['skiprows'])
+        self.columns_to_use = config['COUNTRY_SETTINGS']['columns_to_use']
 
         self.partno_start = config['COUNTRY_SETTINGS']['partno_start']
         self.partno_end = config['COUNTRY_SETTINGS']['partno_end']

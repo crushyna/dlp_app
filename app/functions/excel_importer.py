@@ -17,15 +17,16 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
                                                       self.header,
                                                       self.names,
                                                       self.index_col,
-                                                      self.skiprows)
+                                                      self.skiprows,
+                                                      self.columns_to_use)
 
     @staticmethod
-    def read_excel_file(filename: str, header, names, index_col, skiprows: int):
+    def read_excel_file(filename: str, header, names, index_col, skiprows: int, columns_to_use):
         dataframe = pd.read_excel(os.path.join('app/acquisition/', filename),
                                   header=None if header == 'None' else header,
                                   names=None if names == 'None' else names,
                                   index_col=None if index_col == 'None' else index_col,
-                                  usecols="A,C",
+                                  usecols=columns_to_use,
                                   convert_float=False,
                                   skiprows=skiprows)
 
@@ -37,8 +38,5 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
 
         # change price objects to floats
         dataframe['price'] = pd.to_numeric(dataframe['price'])
-
-        # change type "object" to string
-        dataframe['part_no'] = dataframe['part_no'].astype('str')
 
         return dataframe
