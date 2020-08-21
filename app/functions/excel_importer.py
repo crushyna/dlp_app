@@ -24,12 +24,17 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
                                                       self.columns_to_use)
 
     def drop_duplicates(self):
-        # self.initial_dataframe.drop_duplicates()
-        # self.initial_dataframe = self.initial_dataframe.sort_values('part_no', ascending=False).drop_duplicates('part_no',keep='last').sort_index()
-        # self.initial_dataframe = self.initial_dataframe.sort_values('price').drop_duplicates('part_no', keep='last')
+        if self.part_number_duplicates == 1:
+            if self.prefer_higher_price == 1:
+                pass
 
-        # duplicated_rows = self.initial_dataframe[self.initial_dataframe.duplicated()]
-        # pd.concat(g for _, g in self.initial_dataframe.groupby(str_part_no) if len(g) > 1)
+            elif self.prefer_higher_price == 0:
+                pass
+
+            else:
+                pass
+        else:
+            pass
 
         duplicated_rows = self.initial_dataframe[self.initial_dataframe.duplicated([str_part_no], keep=False)]
 
