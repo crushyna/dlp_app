@@ -28,9 +28,11 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
             duplicates_dataframe = self.initial_dataframe[self.initial_dataframe.duplicated([str_part_no], keep=False)]
             if self.prefer_higher_price == 1:
                 idmin = duplicates_dataframe.price.idxmin()
+                self.initial_dataframe = self.initial_dataframe.drop(idmin)
 
             elif self.prefer_higher_price == 0:
                 idmax = duplicates_dataframe.price.idxmax()
+                self.initial_dataframe = self.initial_dataframe.drop(idmax)
 
             else:
                 pass
@@ -93,11 +95,13 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
 
     @staticmethod
     def save_to_fwf_txt(dataframe: object, fmt: str):
+        # TODO: should be working with .ini file
         output_dataframe = dataframe
         output_dataframe[str_price] = output_dataframe[str_price].apply(str)
         output_dataframe = output_dataframe.apply(lambda x: x.str.replace('.', ','))
         output_dataframe = output_dataframe[[str_part_no, str_price]]
 
+        # ExcelProcessingObject.save_to_fwf_txt(object.initial_dataframe, "%-20s%+30s")
         np.savetxt(r'test1.txt', output_dataframe.values, fmt=fmt)
 
         return 0
