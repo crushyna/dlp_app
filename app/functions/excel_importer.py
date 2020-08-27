@@ -58,7 +58,20 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
         pass
 
     def drop_null_part_no(self):
-        pass
+        """
+        This might not work as expected and will require some fixing, since column PART_NO might be a string.
+        :return: initial_dataframe
+        """
+        if self.alternative_equals_original == 1:
+            self.initial_dataframe = self.initial_dataframe[(self.initial_dataframe.part_no != '0') &
+                                                            (self.initial_dataframe.part_no != '0.0') &
+                                                            (self.initial_dataframe.part_no != 0)]
+            self.initial_dataframe.reset_index(inplace=True)
+
+        else:
+            pass
+
+        return self.initial_dataframe
 
     @staticmethod
     def read_excel_file(filename: str, header, names, index_col, skiprows: int, columns_to_use):
