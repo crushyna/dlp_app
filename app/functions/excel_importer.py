@@ -28,11 +28,9 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
             duplicates_dataframe = self.initial_dataframe[self.initial_dataframe.duplicated([str_part_no], keep=False)]
             if self.prefer_higher_price == 1:
                 idmin = duplicates_dataframe.price.idxmin()
-                self.initial_dataframe = self.initial_dataframe.drop(idmin).reset_index()
 
             elif self.prefer_higher_price == 0:
                 idmax = duplicates_dataframe.price.idxmax()
-                self.initial_dataframe = self.initial_dataframe.drop(idmax).reset_index()
 
             else:
                 pass
@@ -44,7 +42,6 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
     def drop_zero_prices(self):
         if self.zero_prices == 1:
             self.initial_dataframe = self.initial_dataframe[self.initial_dataframe.price != 0]
-            self.initial_dataframe.reset_index(inplace=True)
 
         else:
             pass
@@ -66,7 +63,6 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
             self.initial_dataframe = self.initial_dataframe[(self.initial_dataframe.part_no != '0') &
                                                             (self.initial_dataframe.part_no != '0.0') &
                                                             (self.initial_dataframe.part_no != 0)]
-            self.initial_dataframe.reset_index(inplace=True)
 
         else:
             pass
@@ -94,3 +90,14 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
         dataframe[str_price] = pd.to_numeric(dataframe[str_price])
 
         return dataframe
+
+    @staticmethod
+    def save_to_fwf_txt_file(dataframe: object, fmt: str):
+        output_dataframe = dataframe
+        output_dataframe[str_price] = output_dataframe[str_price].apply(str)
+        output_dataframe = output_dataframe.apply(lambda x: x.str.replace('.', ','))
+        output_dataframe = output_dataframe[['part_no', 'price']]
+
+        np.savetxt(r'test1.txt', output_dataframe.values, fmt=fmt)
+
+        return 0
