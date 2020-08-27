@@ -41,6 +41,25 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
 
         return self.initial_dataframe
 
+    def drop_zero_prices(self):
+        if self.zero_prices == 1:
+            self.initial_dataframe = self.initial_dataframe[self.initial_dataframe.price != 0]
+            self.initial_dataframe.reset_index(inplace=True)
+
+        else:
+            pass
+
+        return self.initial_dataframe
+
+    def drop_zero_prices_alternative_parts(self):
+        pass
+
+    def drop_alternative_equals_original(self):
+        pass
+
+    def drop_null_part_no(self):
+        pass
+
     @staticmethod
     def read_excel_file(filename: str, header, names, index_col, skiprows: int, columns_to_use):
         dataframe = pd.read_excel(os.path.join('app/acquisition/', filename),
