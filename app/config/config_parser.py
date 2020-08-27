@@ -7,6 +7,10 @@ class LocalizationProcessingSettings:
         config = configparser.ConfigParser()
         config.read(os.path.join('app/config/localization', config_filename))
 
+        self.country_name = config['COUNTRY_SETTINGS']['country_name']
+        self.country_short = config['COUNTRY_SETTINGS']['country_short']
+        self.make = config['COUNTRY_SETTINGS']['make']
+
         self.alternative_parts = int(config['COUNTRY_SETTINGS']['alternative_parts'])
         self.alternative_parts_column_index = int(config['COUNTRY_SETTINGS']['alternative_parts_column_index'])
 
@@ -40,6 +44,8 @@ class LocalizationProcessingSettings:
 
         self.partno_start = int(config['COUNTRY_SETTINGS']['partno_start'])
         self.partno_end = int(config['COUNTRY_SETTINGS']['partno_end'])
-        self.position_alternative_part = int(config['COUNTRY_SETTINGS']['position_alternative_part'])
-        self.position_price = int(config['COUNTRY_SETTINGS']['position_price'])
+        self.position_alternative_part_start = int(config['COUNTRY_SETTINGS']['position_alternative_part_start'])
+        self.position_alternative_part_end = int(config['COUNTRY_SETTINGS']['position_alternative_part_end'])
+        self.position_price_start = int(config['COUNTRY_SETTINGS']['position_price_start'])
+        self.position_price_end = int(config['COUNTRY_SETTINGS']['position_price_end'])
         self.price_length = int(config['COUNTRY_SETTINGS']['price_length'])

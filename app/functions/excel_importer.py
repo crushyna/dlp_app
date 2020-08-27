@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import xlrd
+from datetime import datetime
 
 from config.config_parser import LocalizationProcessingSettings
 
@@ -93,15 +94,17 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
 
         return dataframe
 
-    @staticmethod
-    def save_to_fwf_txt(dataframe: object, fmt: str):
+    def save_to_fwf_txt(self):
         # TODO: should be working with .ini file
-        output_dataframe = dataframe
+        output_dataframe = self.initial_dataframe
         output_dataframe[str_price] = output_dataframe[str_price].apply(str)
         output_dataframe = output_dataframe.apply(lambda x: x.str.replace('.', ','))
         output_dataframe = output_dataframe[[str_part_no, str_price]]
 
+        fmt = f"%-{self.partno_end}s%+{self.position_price_start}s"
+        filename = f"{self.country_short}_{self.make}_{datetime.now().strftime('%d%m%y')}.txt"
+
         # ExcelProcessingObject.save_to_fwf_txt(object.initial_dataframe, "%-20s%+30s")
-        np.savetxt(r'test1.txt', output_dataframe.values, fmt=fmt)
+        np.savetxt(f'{filename}', output_dataframe.values, fmt=fmt)
 
         return 0
