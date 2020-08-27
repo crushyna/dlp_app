@@ -92,11 +92,11 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
         return dataframe
 
     @staticmethod
-    def save_to_fwf_txt_file(dataframe: object, fmt: str):
+    def save_to_fwf_txt(dataframe: object, fmt: str):
         output_dataframe = dataframe
         output_dataframe[str_price] = output_dataframe[str_price].apply(str)
         output_dataframe = output_dataframe.apply(lambda x: x.str.replace('.', ','))
-        output_dataframe = output_dataframe[['part_no', 'price']]
+        output_dataframe = output_dataframe[[str_part_no, str_price]]
 
         np.savetxt(r'test1.txt', output_dataframe.values, fmt=fmt)
 
