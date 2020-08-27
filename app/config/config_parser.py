@@ -18,8 +18,8 @@ class LocalizationProcessingSettings:
         self.loop_1 = config['COUNTRY_SETTINGS']['loop_1']
         self.loop_2 = config['COUNTRY_SETTINGS']['loop_2']
 
-        self.part_number_duplicates = config['COUNTRY_SETTINGS']['part_number_duplicates']
-        self.prefer_higher_price = config['COUNTRY_SETTINGS']['prefer_higher_price']
+        self.part_number_duplicates = int(config['COUNTRY_SETTINGS']['part_number_duplicates'])
+        self.prefer_higher_price = int(config['COUNTRY_SETTINGS']['prefer_higher_price'])
 
         self.price_difference = config['COUNTRY_SETTINGS']['price_difference']
 

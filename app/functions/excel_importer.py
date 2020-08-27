@@ -25,20 +25,21 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
 
     def drop_duplicates(self):
         if self.part_number_duplicates == 1:
+            duplicates_dataframe = self.initial_dataframe[self.initial_dataframe.duplicated([str_part_no], keep=False)]
             if self.prefer_higher_price == 1:
-                pass
+                idmin = duplicates_dataframe.price.idxmin()
+                self.initial_dataframe = self.initial_dataframe.drop(idmin).reset_index()
 
             elif self.prefer_higher_price == 0:
-                pass
+                idmax = duplicates_dataframe.price.idxmax()
+                self.initial_dataframe = self.initial_dataframe.drop(idmax).reset_index()
 
             else:
                 pass
         else:
             pass
 
-        duplicated_rows = self.initial_dataframe[self.initial_dataframe.duplicated([str_part_no], keep=False)]
-
-        return duplicated_rows
+        return self.initial_dataframe
 
     @staticmethod
     def read_excel_file(filename: str, header, names, index_col, skiprows: int, columns_to_use):
