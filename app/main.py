@@ -12,9 +12,16 @@ def main(
     if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods', '.odt')):
         typer.echo("Processing...")
         processed_file = ExcelProcessingObject(filename, settings_file)
+        processed_file.drop_duplicates()
+        processed_file.drop_zero_prices()
+        processed_file.drop_zero_prices_alternative_parts()
+        processed_file.drop_alternative_equals_original()
+        processed_file.drop_null_part_no()
+
         typer.echo("Saving fixed-width file...")
         processed_file.save_to_fwf_txt()
         typer.echo(processed_file.initial_dataframe)
+
         typer.echo("Done!")
 
     else:
