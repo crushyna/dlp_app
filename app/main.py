@@ -1,5 +1,4 @@
 import typer
-from config.config_parser import LocalizationProcessingSettings
 from functions.excel_importer import ExcelProcessingObject
 
 

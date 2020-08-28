@@ -3,6 +3,7 @@ import numpy as np
 import os
 import xlrd
 from datetime import datetime
+import re
 
 from config.config_parser import LocalizationProcessingSettings
 
@@ -81,30 +82,42 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
                                   usecols=columns_to_use,
                                   convert_float=False,
                                   skiprows=skiprows,
-                                  dtype=str)
+                                  dtype={'a': object, 'c': np.float64})
 
         # name columns properly
         dataframe.columns = [str_part_no, str_price]
 
         # change comma separators
-        dataframe = dataframe.apply(lambda x: x.str.replace(',', '.'))
+        # dataframe = dataframe.apply(lambda x: x.str.replace(',', '.'))
 
         # change price objects to floats
-        dataframe[str_price] = pd.to_numeric(dataframe[str_price])
+        # dataframe[str_price] = pd.to_numeric(dataframe[str_price])
+
+        dataframe[str_part_no] = dataframe[str_part_no].astype(str)
+        dataframe[str_part_no] = dataframe[str_part_no].str.replace(r'[.][0]$', '', regex=True)
+        # TODO: dotąd jest OK
 
         return dataframe
 
     def save_to_fwf_txt(self):
-        # TODO: should be working with .ini file
+        current_timestamp = datetime.now().strftime('%d%m%y')
+
         output_dataframe = self.initial_dataframe
-        output_dataframe[str_price] = output_dataframe[str_price].apply(str)
-        output_dataframe = output_dataframe.apply(lambda x: x.str.replace('.', ','))
+        output_dataframe[str_price] = output_dataframe[str_price].round(2)
+
+        # output_dataframe[str_price] = output_dataframe[str_price].apply(str)
+        # output_dataframe = output_dataframe.apply(lambda x: x.str.replace('.', ','))
+
+        # output_dataframe = output_dataframe.apply(lambda x: x.str.replace(pat=r"[,]\\\d$", repl=x[-1], regex=True))
+        output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]
+        output_dataframe.index = output_dataframe.index + 1  # shifting index
+        output_dataframe.sort_index(inplace=True)
         output_dataframe = output_dataframe[[str_part_no, str_price]]
 
         fmt = f"%-{self.partno_end}s%+{self.position_price_start}s"
-        filename = f"{self.country_short}_{self.make}_{datetime.now().strftime('%d%m%y')}.txt"
+        filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
 
         # ExcelProcessingObject.save_to_fwf_txt(object.initial_dataframe, "%-20s%+30s")
-        np.savetxt(f'{filename}', output_dataframe.values, fmt=fmt)
+        np.savetxt(f'{filename}', output_dataframe, fmt=fmt, encoding='utf-8')
 
         return 0
