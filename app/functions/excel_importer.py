@@ -108,7 +108,7 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
         current_timestamp = datetime.now().strftime('%d%m%y')
 
         output_dataframe = self.initial_dataframe
-        output_dataframe[str_price] = output_dataframe[str_price].round(2)
+        output_dataframe[str_price] = output_dataframe[str_price].round(2)      # round float values
         output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]         # add timestamp mark
         output_dataframe.index = output_dataframe.index + 1                     # shift index
         output_dataframe.sort_index(inplace=True)                               # sort index
