@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 import os
-import pandas as pd
-from tabulate import tabulate
 
 
 @dataclass
