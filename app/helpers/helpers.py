@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+import os
 import pandas as pd
 from tabulate import tabulate
 
@@ -8,6 +8,25 @@ from tabulate import tabulate
 class GlobalSettings:
     acquisiton_folder = "app/acquisition/"
     localization_folder = "app/config/localization"
+
+
+class MainProgramHelper:
+
+    @staticmethod
+    def check_if_files_exist(filename: str, settings_file: str):
+        if not os.path.isfile(os.path.join(GlobalSettings.acquisiton_folder, filename)):
+            return f"File {filename} does not exist!"
+            # typer.echo(f"File {filename} does not exist!")
+            # raise typer.Exit()
+
+        elif not os.path.isfile(os.path.join(GlobalSettings.localization_folder, settings_file)):
+            return f"Settings file {settings_file} does not exist!"
+
+            # typer.echo(f"Settings file {settings_file} does not exist!")
+            # raise typer.Exit()
+
+        else:
+            return True
 
 
 class SaveTxtHelper:

@@ -1,5 +1,6 @@
 import typer
 from functions.excel_importer import ExcelProcessingObject
+from helpers.helpers import MainProgramHelper
 import os
 
 from helpers.helpers import GlobalSettings
@@ -10,38 +11,37 @@ def main(
         settings_file: str = typer.Argument(..., help="Settings filename with extension. DO NOT enter filepath!"),
 ):
     global processed_file
-    if not os.path.isfile(os.path.join(GlobalSettings.acquisiton_folder, filename)):
-        typer.echo(f"File {filename} does not exist!")
-        raise typer.Exit()
+    # check if files exits
+    result = MainProgramHelper.check_if_files_exist(filename, settings_file)
+    if result is True:
 
-    elif not os.path.isfile(os.path.join(GlobalSettings.localization_folder, settings_file)):
-        typer.echo(f"Settings file {settings_file} does not exist!")
-        raise typer.Exit()
+        typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
+        if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.odf', '.ods', '.odt')):
+            typer.echo("Processing...")
+            processed_file = ExcelProcessingObject(filename, settings_file, engine='xlrd')
 
-    typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
-    if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.odf', '.ods', '.odt')):
-        typer.echo("Processing...")
-        processed_file = ExcelProcessingObject(filename, settings_file, engine='xlrd')
+        elif filename.lower().endswith('.xlsb'):
+            typer.echo("Processing...")
+            processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
-    elif filename.lower().endswith('.xlsb'):
-        typer.echo("Processing...")
-        processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
+        else:
+            typer.echo(f"{filename} file type is not supported!")
+            raise typer.Exit()
+
+        processed_file.drop_duplicates()
+        processed_file.drop_zero_prices()
+        processed_file.drop_zero_prices_alternative_parts()
+        processed_file.drop_alternative_equals_original()
+        processed_file.drop_null_part_no()
+
+        typer.echo("Saving fixed-width file...")
+        processed_file.save_to_fwf_txt()
+        typer.echo(processed_file.initial_dataframe)
+
+        typer.echo("Done!")
 
     else:
-        typer.echo(f"{filename} file type is not supported!")
-        raise typer.Exit()
-
-    processed_file.drop_duplicates()
-    processed_file.drop_zero_prices()
-    processed_file.drop_zero_prices_alternative_parts()
-    processed_file.drop_alternative_equals_original()
-    processed_file.drop_null_part_no()
-
-    typer.echo("Saving fixed-width file...")
-    processed_file.save_to_fwf_txt()
-    typer.echo(processed_file.initial_dataframe)
-
-    typer.echo("Done!")
+        typer.echo(result)
 
     # processing_settings = LocalizationProcessingSettings(settings_file)
     # typer.echo(processing_settings.__dict__)
