@@ -13,8 +13,10 @@ def version_callback(value: bool):
 
 
 def main(
-        filename: str = typer.Argument(..., help="Filename to process with extension. DO NOT enter filepath!"),
-        settings_file: str = typer.Argument(..., help="Settings filename with extension. DO NOT enter filepath!"),
+        filename: str = typer.Argument(...,
+                                       help="Filename to process including its extension. DO NOT enter filepath!"),
+        settings_file: str = typer.Argument(...,
+                                            help="Settings filename including its extension. DO NOT enter filepath!"),
         version: Optional[bool] = typer.Option(
             None, "--version", callback=version_callback
         )
