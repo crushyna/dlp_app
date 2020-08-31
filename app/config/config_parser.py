@@ -1,11 +1,13 @@
 import configparser
 import os
 
+from helpers.helpers import GlobalSettings
+
 
 class LocalizationProcessingSettings:
     def __init__(self, config_filename: str):
         config = configparser.ConfigParser()
-        config.read(os.path.join('app/config/localization', config_filename))
+        config.read(os.path.join(GlobalSettings.localization_folder, config_filename))
 
         self.country_name = config['COUNTRY_SETTINGS']['country_name']
         self.country_short = config['COUNTRY_SETTINGS']['country_short']
