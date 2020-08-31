@@ -1,5 +1,4 @@
 from typing import Optional
-
 import typer
 from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper
@@ -38,11 +37,14 @@ def main(
             typer.echo(f"{filename} file type is not supported!")
             raise typer.Exit()
 
-        processed_file.drop_duplicates()
-        processed_file.drop_zero_prices()
-        processed_file.drop_zero_prices_alternative_parts()
-        processed_file.drop_alternative_equals_original()
-        processed_file.drop_null_part_no()
+        processing_list = [processed_file.drop_duplicates,
+                           processed_file.drop_zero_prices,
+                           processed_file.drop_zero_prices_alternative_parts,
+                           processed_file.drop_alternative_equals_original,
+                           processed_file.drop_null_part_no]
+
+        for each_function in processing_list:
+            each_function()
 
         typer.echo("Saving fixed-width file...")
         processed_file.save_to_fwf_txt()

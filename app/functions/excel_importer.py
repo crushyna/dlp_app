@@ -3,7 +3,6 @@ import numpy as np
 import os
 import xlrd
 from datetime import datetime
-import re
 import pyxlsb
 
 from config.config_parser import LocalizationProcessingSettings
