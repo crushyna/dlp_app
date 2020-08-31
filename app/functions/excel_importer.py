@@ -8,8 +8,8 @@ import pyxlsb
 from config.config_parser import LocalizationProcessingSettings
 from helpers.helpers import SaveTxtHelper, GlobalSettings
 
-str_part_no = "part_no"
-str_price = "price"
+str_part_no = GlobalSettings.str_part_no
+str_price = GlobalSettings.str_price
 
 
 class ExcelProcessingObject(LocalizationProcessingSettings):
@@ -72,7 +72,6 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
             self.initial_dataframe = self.initial_dataframe[(self.initial_dataframe.part_no != '0') &
                                                             (self.initial_dataframe.part_no != '0.0') &
                                                             (self.initial_dataframe.part_no != 0)]
-
         else:
             pass
 

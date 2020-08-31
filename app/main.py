@@ -1,6 +1,7 @@
 from typing import Optional
 import typer
 from functions.excel_importer import ExcelProcessingObject
+# from functions.csv_importer import CSVProcessingObject
 from helpers.helpers import MainProgramHelper
 
 __version__ = "0.1.0"
@@ -34,6 +35,10 @@ def main(
         elif filename.lower().endswith('.xlsb'):
             typer.echo("Processing...")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
+
+        elif filename.lower().endswith('.csv'):
+            typer.echo("Processing...")
+            processed_file = CSVProcessingObject(filename, settings_file)
 
         else:
             typer.echo(f"{filename} file type is not supported!")

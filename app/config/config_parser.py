@@ -44,6 +44,8 @@ class LocalizationProcessingSettings:
         self.skiprows = int(config['COUNTRY_SETTINGS']['skiprows'])
         self.columns_to_use = config['COUNTRY_SETTINGS']['columns_to_use']
 
+        self.delimiter = None if config['COUNTRY_SETTINGS']['delimiter'] is None else config['COUNTRY_SETTINGS']['delimiter']
+
         self.partno_start = int(config['COUNTRY_SETTINGS']['partno_start'])
         self.partno_end = int(config['COUNTRY_SETTINGS']['partno_end'])
         self.position_alternative_part_start = int(config['COUNTRY_SETTINGS']['position_alternative_part_start'])
