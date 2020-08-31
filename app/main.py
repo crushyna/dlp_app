@@ -1,9 +1,6 @@
 import typer
 from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper
-import os
-
-from helpers.helpers import GlobalSettings
 
 
 def main(
@@ -42,9 +39,6 @@ def main(
 
     else:
         typer.echo(result)
-
-    # processing_settings = LocalizationProcessingSettings(settings_file)
-    # typer.echo(processing_settings.__dict__)
 
 
 if __name__ == '__main__':
