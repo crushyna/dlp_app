@@ -1,11 +1,24 @@
+from typing import Optional
+
 import typer
 from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper
+
+__version__ = "0.1.0"
+
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"Data Localization Processing App version: {__version__}")
+        raise typer.Exit()
 
 
 def main(
         filename: str = typer.Argument(..., help="Filename to process with extension. DO NOT enter filepath!"),
         settings_file: str = typer.Argument(..., help="Settings filename with extension. DO NOT enter filepath!"),
+        version: Optional[bool] = typer.Option(
+            None, "--version", callback=version_callback
+        )
 ):
     global processed_file
     # check if files exits
