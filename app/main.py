@@ -1,7 +1,8 @@
 from typing import Optional
 import typer
+
+from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
-# from functions.csv_importer import CSVProcessingObject
 from helpers.helpers import MainProgramHelper
 
 __version__ = "0.1.0"

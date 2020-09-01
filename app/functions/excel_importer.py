@@ -80,10 +80,10 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
     @staticmethod
     def read_excel_file(filename: str, header, names, index_col, skiprows: int, columns_to_use, engine: str):
         dataframe = pd.read_excel(os.path.join(GlobalSettings.acquisiton_folder, filename),
-                                  header=None if header == 'None' else header,
-                                  names=None if names == 'None' else names,
-                                  index_col=None if index_col == 'None' else index_col,
-                                  usecols=columns_to_use,
+                                  header=None if header is None else header,
+                                  names=None if names is None else names,
+                                  index_col=None if index_col is None else index_col,
+                                  usecols=tuple(columns_to_use),
                                   convert_float=False,
                                   skiprows=skiprows,
                                   dtype=str,
@@ -107,10 +107,10 @@ class ExcelProcessingObject(LocalizationProcessingSettings):
         current_timestamp = datetime.now().strftime('%d%m%y')
 
         output_dataframe = self.initial_dataframe
-        output_dataframe[str_price] = output_dataframe[str_price].round(2)      # round float values
-        output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]         # add timestamp mark
-        output_dataframe.index = output_dataframe.index + 1                     # shift index
-        output_dataframe.sort_index(inplace=True)                               # sort index
+        output_dataframe[str_price] = output_dataframe[str_price].round(2)  # round float values
+        output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]  # add timestamp mark
+        output_dataframe.index = output_dataframe.index + 1  # shift index
+        output_dataframe.sort_index(inplace=True)  # sort index
         output_dataframe = output_dataframe[[str_part_no, str_price]]
 
         fmt = f"%-{self.partno_end}s%+{self.position_price_start}.2f"
