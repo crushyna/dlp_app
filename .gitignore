@@ -148,3 +148,4 @@ cython_debug/
 .idea/vcs.xml
 app/config/__pycache__/
 test_files/
+!/app/config/localization/ua_mitsubishi.ini

@@ -1,11 +1,17 @@
+import configparser
 from dataclasses import dataclass
 import os
 
 
 @dataclass
 class GlobalSettings:
-    acquisiton_folder = "app/acquisition/"
-    localization_folder = "app/config/localization"
+    config = configparser.ConfigParser()
+    config.read('app/config/global_settings.ini')
+
+    acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
+    localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
+    str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
+    str_price = config['GLOBAL_APP_SETTINGS']['str_price']
 
 
 class MainProgramHelper:

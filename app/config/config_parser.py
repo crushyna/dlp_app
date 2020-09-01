@@ -9,6 +9,30 @@ class LocalizationProcessingSettings:
         config = configparser.ConfigParser()
         config.read(os.path.join(GlobalSettings.localization_folder, config_filename))
 
+        for each_element in config.items('COUNTRY_SETTINGS'):
+            if each_element[1] == 'None':
+                setattr(self, each_element[0], None)
+
+            elif each_element[1] == '':
+                setattr(self, each_element[0], None)
+
+            elif each_element[1].isdigit():
+                setattr(self, each_element[0], int(each_element[1]))
+
+            elif each_element[0] == 'columns_to_use':
+                try:
+                    setattr(self, each_element[0], tuple(int(num) for num in each_element[1].replace('(', '')
+                                                         .replace(')', '')
+                                                         .replace('...', '').split(', ')))
+                except ValueError:
+                    setattr(self, each_element[0], tuple(str(x) for x in each_element[1].replace('(', '')
+                                                         .replace(')', '')
+                                                         .replace('...', '').split(', ')))
+
+            else:
+                setattr(self, each_element[0], each_element[1])
+
+        '''
         self.country_name = config['COUNTRY_SETTINGS']['country_name']
         self.country_short = config['COUNTRY_SETTINGS']['country_short']
         self.make = config['COUNTRY_SETTINGS']['make']
@@ -44,6 +68,8 @@ class LocalizationProcessingSettings:
         self.skiprows = int(config['COUNTRY_SETTINGS']['skiprows'])
         self.columns_to_use = config['COUNTRY_SETTINGS']['columns_to_use']
 
+        self.delimiter = None if config['COUNTRY_SETTINGS']['delimiter'] is None else config['COUNTRY_SETTINGS']['delimiter']
+
         self.partno_start = int(config['COUNTRY_SETTINGS']['partno_start'])
         self.partno_end = int(config['COUNTRY_SETTINGS']['partno_end'])
         self.position_alternative_part_start = int(config['COUNTRY_SETTINGS']['position_alternative_part_start'])
@@ -51,3 +77,4 @@ class LocalizationProcessingSettings:
         self.position_price_start = int(config['COUNTRY_SETTINGS']['position_price_start'])
         self.position_price_end = int(config['COUNTRY_SETTINGS']['position_price_end'])
         self.price_length = int(config['COUNTRY_SETTINGS']['price_length'])
+        '''

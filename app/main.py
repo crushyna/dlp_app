@@ -1,10 +1,11 @@
 from typing import Optional
-
 import typer
+
+from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 def version_callback(value: bool):
@@ -14,8 +15,10 @@ def version_callback(value: bool):
 
 
 def main(
-        filename: str = typer.Argument(..., help="Filename to process with extension. DO NOT enter filepath!"),
-        settings_file: str = typer.Argument(..., help="Settings filename with extension. DO NOT enter filepath!"),
+        filename: str = typer.Argument(...,
+                                       help="Filename to process including its extension. DO NOT enter filepath!"),
+        settings_file: str = typer.Argument(...,
+                                            help="Settings filename including its extension. DO NOT enter filepath!"),
         version: Optional[bool] = typer.Option(
             None, "--version", callback=version_callback
         )
@@ -34,15 +37,22 @@ def main(
             typer.echo("Processing...")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
+        elif filename.lower().endswith('.csv'):
+            typer.echo("Processing...")
+            processed_file = CSVProcessingObject(filename, settings_file)
+
         else:
             typer.echo(f"{filename} file type is not supported!")
             raise typer.Exit()
 
-        processed_file.drop_duplicates()
-        processed_file.drop_zero_prices()
-        processed_file.drop_zero_prices_alternative_parts()
-        processed_file.drop_alternative_equals_original()
-        processed_file.drop_null_part_no()
+        processing_list = [processed_file.drop_duplicates,
+                           processed_file.drop_zero_prices,
+                           processed_file.drop_zero_prices_alternative_parts,
+                           processed_file.drop_alternative_equals_original,
+                           processed_file.drop_null_part_no]
+
+        for each_function in processing_list:
+            each_function()
 
         typer.echo("Saving fixed-width file...")
         processed_file.save_to_fwf_txt()
