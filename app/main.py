@@ -5,7 +5,7 @@ from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 def version_callback(value: bool):
@@ -49,7 +49,8 @@ def main(
                            processed_file.drop_zero_prices,
                            processed_file.drop_zero_prices_alternative_parts,
                            processed_file.drop_alternative_equals_original,
-                           processed_file.drop_null_part_no]
+                           processed_file.drop_null_part_no,
+                           processed_file.drop_na_values]
 
         for each_function in processing_list:
             each_function()

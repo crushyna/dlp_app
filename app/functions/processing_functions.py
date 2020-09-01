@@ -57,6 +57,15 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
+    def drop_na_values(self):
+        if self.na_values == 1:
+            self.initial_dataframe = self.initial_dataframe.dropna()
+
+        else:
+            pass
+
+        return self.initial_dataframe
+
     def save_to_fwf_txt(self):
         # get current timestamp
         current_timestamp = datetime.now().strftime('%d%m%y')
