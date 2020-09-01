@@ -5,7 +5,7 @@ from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 def version_callback(value: bool):

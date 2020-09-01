@@ -1,20 +1,15 @@
-from typing import Optional
-
 import pandas as pd
-import numpy as np
 import os
-import xlrd
-from datetime import datetime
-import pyxlsb
 
 from config.config_parser import LocalizationProcessingSettings
-from helpers.helpers import SaveTxtHelper, GlobalSettings
+from functions.processing_functions import ProcessingFunctions
+from helpers.helpers import GlobalSettings
 
 str_part_no = GlobalSettings.str_part_no
 str_price = GlobalSettings.str_price
 
 
-class CSVProcessingObject(LocalizationProcessingSettings):
+class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
 
     def __init__(self, filename: str, settings_file: str, engine=None):
         super().__init__(settings_file)
@@ -51,7 +46,7 @@ class CSVProcessingObject(LocalizationProcessingSettings):
         dataframe[str_price] = pd.to_numeric(dataframe[str_price])
 
         # clear part_no column from floats (if occur)
-        dataframe[str_part_no] = dataframe[str_part_no].astype(str)
-        dataframe[str_part_no] = dataframe[str_part_no].str.replace(r'[.][0]$', '', regex=True)
+        # dataframe[str_part_no] = dataframe[str_part_no].astype(str)
+        # dataframe[str_part_no] = dataframe[str_part_no].str.replace(r'[.][0]$', '', regex=True)
 
         return dataframe
