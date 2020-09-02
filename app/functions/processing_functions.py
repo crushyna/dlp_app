@@ -70,7 +70,7 @@ class ProcessingFunctions:
         return self.initial_dataframe
 
     def vat_setter(self):
-        if self.vat_setting == 1 or 2:
+        if self.vat_setting in (1, 2):
             logging.debug("Calculating new prices (VAT)")
             if self.vat_setting == 1:
                 self.initial_dataframe.price = self.initial_dataframe.price * (1 + (self.vat_value/100))
