@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import os
 import xlrd
@@ -29,6 +31,7 @@ class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions)
 
     @staticmethod
     def read_excel_file(filename: str, header, names, index_col, skiprows: int, columns_to_use, engine: str):
+        logging.info(f"Reading Excel file: {filename}")
         dataframe = pd.read_excel(os.path.join(GlobalSettings.acquisiton_folder, filename),
                                   header=None if header is None else header,
                                   names=None if names is None else names,
@@ -40,13 +43,16 @@ class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions)
                                   engine=engine)
 
         # name columns properly
+        logging.debug(f"{filename}: naming columns")
         dataframe.columns = [str_part_no, str_price]
 
         # change price strings to floats
+        logging.debug(f"{filename}: changing price to floats")
         dataframe[str_price] = dataframe[str_price].str.replace(",", ".")
         dataframe[str_price] = pd.to_numeric(dataframe[str_price])
 
         # clear part_no column from floats (if occur)
+        logging.debug(f"{filename}: clearing part_no column")
         dataframe[str_part_no] = dataframe[str_part_no].astype(str)
         dataframe[str_part_no] = dataframe[str_part_no].str.replace(r'[.][0]$', '', regex=True)
 
