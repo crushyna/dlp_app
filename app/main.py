@@ -34,7 +34,13 @@ def main(
         version: Optional[bool] = typer.Option(
             None, "--version", callback=version_callback
         )
-):
+        ):
+    """
+    Entry point for application!
+    :param filename:
+    :param settings_file:
+    :param version
+    """
     # check if files exits
     result = MainProgramHelper.check_if_files_exist(filename, settings_file)
     if result is True:
