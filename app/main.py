@@ -58,7 +58,7 @@ def main(
             logging.debug("Using pyxlsb engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
-        elif filename.lower().endswith('.csv'):
+        elif filename.lower().endswith(('.csv', '.txt')):
             typer.echo("Processing...")
             logging.debug("Using standard CSV Python engine")
             processed_file = CSVProcessingObject(filename, settings_file)

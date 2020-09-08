@@ -2,10 +2,13 @@ from datetime import datetime
 import numpy as np
 from helpers.helpers import GlobalSettings, SaveTxtHelper
 import logging
+import os
 
 
 class ProcessingFunctions:
     initial_dataframe: object
+
+    # TODO: deleting symbols like ,.[]\-= from part number
 
     def drop_duplicates(self):
         if self.part_number_duplicates == 1:
@@ -98,14 +101,13 @@ class ProcessingFunctions:
         output_dataframe.sort_index(inplace=True)  # sort index
         output_dataframe = output_dataframe[[GlobalSettings.str_part_no, GlobalSettings.str_price]]
 
-        fmt = f"%-{self.partno_end}s%{self.position_price_start}.2f"
-        fmt = f"%-{self.partno_end}s%{self.position_price_start}.{self.decimal_places}f"
+        fmt = f"%-{self.partno_start + self.partno_length}s%{self.price_start - self.price_length}.{self.decimal_places}f"
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
 
-        np.savetxt(f'{filename}', output_dataframe, fmt=fmt, encoding='utf-8')
+        np.savetxt(os.path.join('app/output/', filename), output_dataframe, fmt=fmt, encoding='utf-8')
 
         # Replace strings in .txt file
         logging.debug(f"Replacing decimal separator")
-        SaveTxtHelper.replace_string(filename, ".", ",")
+        SaveTxtHelper.replace_string(os.path.join('app/output/', filename), ".", ",")
 
         return 1
