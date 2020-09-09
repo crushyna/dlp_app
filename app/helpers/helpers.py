@@ -11,6 +11,7 @@ class GlobalSettings:
     acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
     localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
     str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
+    str_part_ss = config['GLOBAL_APP_SETTINGS']['str_part_ss']
     str_price = config['GLOBAL_APP_SETTINGS']['str_price']
     return_console_messages = int(config['GLOBAL_APP_SETTINGS']['return_console_messages'])
     use_logs = int(config['GLOBAL_APP_SETTINGS']['use_logs'])

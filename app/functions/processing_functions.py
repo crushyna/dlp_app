@@ -63,6 +63,10 @@ class ProcessingFunctions:
         return self.initial_dataframe
 
     def drop_na_values(self):
+        """
+        Drops NA values across whole dataset.
+        :return:
+        """
         if self.na_values == 1:
             logging.debug("Dropping NA values")
             self.initial_dataframe = self.initial_dataframe.dropna()
@@ -94,17 +98,37 @@ class ProcessingFunctions:
         # get current timestamp
         current_timestamp = datetime.now().strftime('%d%m%y')
 
+        # round float values
         output_dataframe = self.initial_dataframe
-        output_dataframe[GlobalSettings.str_price] = output_dataframe[GlobalSettings.str_price].round(2)
-        output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]  # add timestamp mark
+        output_dataframe[GlobalSettings.str_price] = output_dataframe[GlobalSettings.str_price].round(self.decimal_places)
+
+        # add timestamp mark
+        if self.alternative_parts == 1:
+            output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99, '']  # add timestamp mark
+        else:
+            output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]  # add timestamp mark
+
         output_dataframe.index = output_dataframe.index + 1  # shift index
         output_dataframe.sort_index(inplace=True)  # sort index
-        output_dataframe = output_dataframe[[GlobalSettings.str_part_no, GlobalSettings.str_price]]
 
-        fmt = f"%-{self.partno_start + self.partno_length}s%{self.price_start - self.price_length}.{self.decimal_places}f"
+        output_dataframe = output_dataframe[[GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
+
+        if self.alternative_parts == 1:
+            output_dataframe = output_dataframe[
+                [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
+            # TODO: here's the error! this needs another solution or calculation to meet requiremets.
+            fmt = f"%-{self.partno_start + self.partno_length}s" \
+                  f"%{self.alternative_part_start - self.alternative_part_length}s" \
+                  f"%{self.price_start - self.price_length}.{self.decimal_places}f "
+
+        else:
+            output_dataframe = output_dataframe[
+                [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
+            fmt = f"%-{self.partno_start + self.partno_length}s%{self.price_start - self.price_length}.{self.decimal_places}f"
+
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
 
-        np.savetxt(os.path.join('app/output/', filename), output_dataframe, fmt=fmt, encoding='utf-8')
+        np.savetxt(fname=(os.path.join('app/output/', filename)), X=output_dataframe, fmt=fmt, encoding='utf-8')
 
         # Replace strings in .txt file
         logging.debug(f"Replacing decimal separator")
