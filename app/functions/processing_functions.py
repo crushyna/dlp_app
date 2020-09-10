@@ -104,7 +104,8 @@ class ProcessingFunctions:
 
         # add timestamp mark
         if self.alternative_parts == 1:
-            output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99, '']  # add timestamp mark
+            # TODO: now here's problem
+            output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99, '']  # add timestamp mark
         else:
             output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]  # add timestamp mark
 
@@ -116,10 +117,9 @@ class ProcessingFunctions:
         if self.alternative_parts == 1:
             output_dataframe = output_dataframe[
                 [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
-            # TODO: here's the error! this needs another solution or calculation to meet requiremets.
-            fmt = f"%-{self.partno_start + self.partno_length}s" \
-                  f"%{self.alternative_part_start - self.alternative_part_length}s" \
-                  f"%{self.price_start - self.price_length}.{self.decimal_places}f "
+            fmt = f"%-{self.partno_length}s" \
+                  f"%{self.alternative_part_start - self.partno_start}s" \
+                  f"%{self.price_start - self.alternative_part_start - self.partno_start + self.decimal_places}.{self.decimal_places}f"
 
         else:
             output_dataframe = output_dataframe[
@@ -131,7 +131,9 @@ class ProcessingFunctions:
         np.savetxt(fname=(os.path.join('app/output/', filename)), X=output_dataframe, fmt=fmt, encoding='utf-8')
 
         # Replace strings in .txt file
-        logging.debug(f"Replacing decimal separator")
+        logging.debug("Adding price list title")
+        SaveTxtHelper.replace_string(os.path.join('app/output/', filename), f'$${current_timestamp}    ', f'PriceL{current_timestamp}')
+        logging.debug("Replacing decimal separator")
         SaveTxtHelper.replace_string(os.path.join('app/output/', filename), ".", ",")
 
         return 1
