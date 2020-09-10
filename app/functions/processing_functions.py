@@ -117,9 +117,9 @@ class ProcessingFunctions:
         if self.alternative_parts == 1:
             output_dataframe = output_dataframe[
                 [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
-            fmt = f"%-{self.partno_length}s" \
-                  f"%{self.alternative_part_start - self.partno_start}s" \
-                  f"%{self.price_start - self.alternative_part_start - self.partno_start + self.decimal_places}.{self.decimal_places}f"
+            fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
+                  f"%-{self.price_start - self.alternative_part_start}s" \
+                  f"%{self.price_length}.{self.decimal_places}f"
 
         else:
             output_dataframe = output_dataframe[
