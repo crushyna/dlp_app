@@ -31,6 +31,29 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
+    def drop_loops(self):
+        # TODO: continue here
+        """
+        for partno_index, each_partno_value in instance.initial_dataframe.part_no.iteritems():
+            for ss_index, each_ss_value in instance.initial_dataframe.ss.iteritems():
+                if each_partno_value == each_ss_value:
+                    print(f"{partno_index}: {each_partno_value} == {ss_index}: {each_ss_value}")
+
+
+        """
+        if self.clear_loops == 1:
+            logging.debug("Dropping loops")
+            for each_value in self.initial_dataframe.part_no:
+                pass
+            if self.loop_prefer_higher_price == 1:
+                pass
+
+            else:
+                pass
+
+        else:
+            pass
+
     def drop_zero_prices(self):
         if self.zero_prices == 1:
             logging.debug("Dropping zero prices")

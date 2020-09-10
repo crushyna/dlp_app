@@ -8,6 +8,7 @@ class GlobalSettings:
     config = configparser.ConfigParser()
     config.read('app/config/global_settings.ini')
 
+    # TODO: delete str_* as they shouldn't be used
     acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
     localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
     str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
