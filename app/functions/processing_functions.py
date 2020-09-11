@@ -34,15 +34,20 @@ class ProcessingFunctions:
     def drop_loops(self):
         # TODO: continue here
         """
-        for partno_index, each_partno_value in instance.initial_dataframe.part_no.iteritems():
-            for ss_index, each_ss_value in instance.initial_dataframe.ss.iteritems():
-                if each_partno_value == each_ss_value:
-                    print(f"{partno_index}: {each_partno_value} == {ss_index}: {each_ss_value}")
-
-
+        iteritems and iterrows is too slow.
         """
         if self.clear_loops == 1:
             logging.debug("Dropping loops")
+            import sqlite3
+            database_name = f"{self.country_short}_{self.make}_db"
+            cnx = sqlite3.connect(database_name)
+            df = self.initial_dataframe[self.initial_dataframe.ss != '']
+            df.to_sql(name='dataframe', con=cnx, index=False)
+            cursor = cnx.cursor()
+            query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
+            dataframe_1 ON (dataframe.ss = dataframe_1.part_no) AND (dataframe.part_no = dataframe_1.ss) """
+            pd.read_sql(query, con=cnx)
+
             for each_value in self.initial_dataframe.part_no:
                 pass
             if self.loop_prefer_higher_price == 1:
@@ -160,3 +165,4 @@ class ProcessingFunctions:
         SaveTxtHelper.replace_string(os.path.join('app/output/', filename), ".", ",")
 
         return 1
+
