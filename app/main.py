@@ -69,6 +69,7 @@ def main(
             raise typer.Exit()
 
         processing_list = [processed_file.drop_duplicates,
+                           processed_file.drop_loops,
                            processed_file.drop_zero_prices,
                            processed_file.drop_zero_prices_alternative_parts,
                            processed_file.drop_alternative_equals_original,

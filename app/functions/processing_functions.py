@@ -1,6 +1,7 @@
 from datetime import datetime
 import numpy as np
-from helpers.helpers import GlobalSettings, SaveTxtHelper
+import pandas as pd
+from helpers.helpers import GlobalSettings, SaveTxtHelper, DataframeHelpers
 import logging
 import os
 
@@ -32,9 +33,9 @@ class ProcessingFunctions:
         return self.initial_dataframe
 
     def drop_loops(self):
-        # TODO: continue here
+        # TODO: works! but clean it!
         """
-        iteritems and iterrows is too slow.
+        iteritems and iterrows is too slow. Local temporary database is required.
         """
         if self.clear_loops == 1:
             logging.debug("Dropping loops")
@@ -42,19 +43,19 @@ class ProcessingFunctions:
             database_name = f"{self.country_short}_{self.make}_db"
             cnx = sqlite3.connect(database_name)
             df = self.initial_dataframe[self.initial_dataframe.ss != '']
-            df.to_sql(name='dataframe', con=cnx, index=False)
-            cursor = cnx.cursor()
-            query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
-            dataframe_1 ON (dataframe.ss = dataframe_1.part_no) AND (dataframe.part_no = dataframe_1.ss) """
-            pd.read_sql(query, con=cnx)
+            df.to_sql(name='dataframe', con=cnx)
+            # cursor = cnx.cursor()
 
-            for each_value in self.initial_dataframe.part_no:
-                pass
-            if self.loop_prefer_higher_price == 1:
-                pass
+            result_df = pd.read_sql(DataframeHelpers.loop_query, con=cnx)
+            exclusion_dataframe = DataframeHelpers.clear_loops(result_df, self.loop_prefer_higher_price)
 
-            else:
-                pass
+            self.initial_dataframe = pd.concat([self.initial_dataframe, exclusion_dataframe]).drop_duplicates(keep=False)
+            self.initial_dataframe.sort_index(inplace=True)
+
+            cnx.close()
+            os.remove(database_name)
+
+            return self.initial_dataframe
 
         else:
             pass
@@ -68,6 +69,10 @@ class ProcessingFunctions:
             pass
 
         return self.initial_dataframe
+
+    def create_prices_for_missing_ss(self):
+        # TODO: continue here!
+        pass
 
     def drop_zero_prices_alternative_parts(self):
         pass
@@ -132,7 +137,6 @@ class ProcessingFunctions:
 
         # add timestamp mark
         if self.alternative_parts == 1:
-            # TODO: now here's problem
             output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99, '']  # add timestamp mark
         else:
             output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]  # add timestamp mark
@@ -164,5 +168,5 @@ class ProcessingFunctions:
         logging.debug("Replacing decimal separator")
         SaveTxtHelper.replace_string(os.path.join('app/output/', filename), ".", ",")
 
+        logging.info("File saved successfully!")
         return 1
-
