@@ -19,11 +19,10 @@ class ProcessingFunctions:
             duplicates_dataframe = self.initial_dataframe[
                 self.initial_dataframe.duplicated([GlobalSettings.str_part_no], keep=False)]
             if len(duplicates_dataframe) != 0:
+                # remove all duplicates
+                self.initial_dataframe = pd.concat([self.initial_dataframe, duplicates_dataframe]).drop_duplicates(
+                    keep=False)
                 if self.prefer_higher_price == 1:
-                    # remove all duplicates
-                    self.initial_dataframe = pd.concat([self.initial_dataframe, duplicates_dataframe]).drop_duplicates(
-                        keep=False)
-
                     # add proper one
                     values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
                                                                                                      keep='last')
@@ -33,10 +32,6 @@ class ProcessingFunctions:
                     self.initial_dataframe.reset_index(inplace=True, drop=True)
 
                 elif self.prefer_higher_price == 0:
-                    # remove all duplicates
-                    self.initial_dataframe = pd.concat([self.initial_dataframe, duplicates_dataframe]).drop_duplicates(
-                        keep=False)
-
                     # add proper one
                     values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
                                                                                               keep='first')
