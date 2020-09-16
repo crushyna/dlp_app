@@ -93,7 +93,7 @@ class DataframeHelpers:
                         exclusion_dataframe.index = exclusion_dataframe.index + 1
                         exclusion_dataframe = exclusion_dataframe.sort_index()
 
-        logging.debug(exclusion_dataframe)
+        logging.debug(f"Excluded values: {exclusion_dataframe}")
         return exclusion_dataframe, fixed_dataframe
 
     @staticmethod

@@ -26,15 +26,24 @@ class ProcessingFunctions:
 
                     # add proper one
                     values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
-                                                                                                     keep='first')
+                                                                                                     keep='last')
                     self.initial_dataframe = self.initial_dataframe.append(values_to_add, sort='false')
-                    self.initial_dataframe.sort_index(inplace=True, drop=True)
+
+                    # save changes & reset index
+                    self.initial_dataframe.reset_index(inplace=True, drop=True)
 
                 elif self.prefer_higher_price == 0:
-                    duplicates_dataframe = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
-                                                                                                     keep='last')
-                    self.initial_dataframe = pd.concat([self.initial_dataframe, duplicates_dataframe]).drop_duplicates(keep=False)
-                    self.initial_dataframe.sort_index(inplace=True)
+                    # remove all duplicates
+                    self.initial_dataframe = pd.concat([self.initial_dataframe, duplicates_dataframe]).drop_duplicates(
+                        keep=False)
+
+                    # add proper one
+                    values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
+                                                                                              keep='first')
+                    self.initial_dataframe = self.initial_dataframe.append(values_to_add, sort='false')
+
+                    # save changes & reset index
+                    self.initial_dataframe.reset_index(inplace=True, drop=True)
 
             else:
                 logging.warning("No duplicates found!")
