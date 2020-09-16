@@ -155,16 +155,10 @@ class ProcessingFunctions:
             self.decimal_places)
 
         # add timestamp mark
-        if self.alternative_parts == 1:
-            output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99, '']  # add timestamp mark
-        else:
-            output_dataframe.loc[-1] = [f'PriceL{current_timestamp}', 9.99]  # add timestamp mark
+        output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99, '']  # add timestamp mark
 
         output_dataframe.index = output_dataframe.index + 1  # shift index
         output_dataframe.sort_index(inplace=True)  # sort index
-
-        output_dataframe = output_dataframe[
-            [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
 
         if self.alternative_parts == 1:
             output_dataframe = output_dataframe[
@@ -175,8 +169,9 @@ class ProcessingFunctions:
 
         else:
             output_dataframe = output_dataframe[
-                [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
-            fmt = f"%-{self.partno_start + self.partno_length}s%{self.price_start - self.price_length}.{self.decimal_places}f"
+                [GlobalSettings.str_part_no, GlobalSettings.str_price]]
+            fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
+                  f"%{(self.price_start - self.alternative_part_start) + self.price_length}.{self.decimal_places}f"
 
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
 
