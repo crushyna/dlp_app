@@ -16,7 +16,6 @@ if GlobalSettings.return_console_messages == 0:
     def _disable_console_messages(*args, **kwargs):
         pass
 
-
     typer.echo = _disable_console_messages
 
 
