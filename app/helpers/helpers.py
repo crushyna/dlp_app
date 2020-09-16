@@ -1,4 +1,5 @@
 import configparser
+import logging
 from dataclasses import dataclass
 import os
 import sqlite3
@@ -59,6 +60,9 @@ class DataframeHelpers:
     loop_query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
                 dataframe_1 ON (dataframe.ss = dataframe_1.part_no) AND (dataframe.part_no = dataframe_1.ss)"""
 
+    missing_ss_query = """SELECT dataframe.ss, dataframe.price FROM dataframe WHERE dataframe.ss NOT IN (SELECT 
+    dataframe.part_no FROM dataframe) AND dataframe.ss != ''"""
+
     @staticmethod
     def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int):
 
@@ -69,27 +73,29 @@ class DataframeHelpers:
             searched_row = (each_row[0], each_row[1])
             searched_row_price = each_row[2]
             reversed_row = searched_row[::-1]
-            print("*" * 10)
-            print(f"Searched row: {searched_row}")
-            print(f"Searcher row price: {searched_row_price}")
-            print(f"Reversed row: {reversed_row}")
+            logging.debug(f"Searched row: {searched_row}")
+            logging.debug(f"Searcher row price: {searched_row_price}")
+            logging.debug(f"Reversed row: {reversed_row}")
             for each_index_1, each_row_1 in result_df.iterrows():
                 temp_row = (each_row_1[0], each_row_1[1])
                 temp_row_price = each_row_1[2]
                 if reversed_row == temp_row:
-                    print(f"Row found! Temp row: {temp_row}")
-                    comparison_operator = operator.le if loop_prefer_higher_price is 1 else operator.ge
-                    # if searched_row_price <= temp_row_price:
+                    logging.debug(f"Row found! Temp row: {temp_row}")
+                    comparison_operator = operator.le if loop_prefer_higher_price == 1 else operator.ge
                     if comparison_operator(searched_row_price, temp_row_price):
-                        print("Searched row price higher!")
+                        logging.debug("Searched row price higher!")
                         fixed_dataframe.loc[-1] = [searched_row[0], searched_row[1], searched_row_price]
                         fixed_dataframe.index = fixed_dataframe.index + 1
                         fixed_dataframe = fixed_dataframe.sort_index()
                     else:
-                        print("Searched row price lower!")
+                        logging.debug("Searched row price lower!")
                         exclusion_dataframe.loc[-1] = [temp_row[0], temp_row[1], temp_row_price]
                         exclusion_dataframe.index = exclusion_dataframe.index + 1
                         exclusion_dataframe = exclusion_dataframe.sort_index()
 
-        print(exclusion_dataframe)
-        return exclusion_dataframe
+        logging.debug(exclusion_dataframe)
+        return exclusion_dataframe, fixed_dataframe
+
+    @staticmethod
+    def create_missing_prices(cls, result_df, loop_prefer_higher_price):
+        pass

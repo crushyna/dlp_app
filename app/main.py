@@ -70,12 +70,14 @@ def main(
 
         processing_list = [processed_file.drop_duplicates,
                            processed_file.drop_loops,
+                           processed_file.create_prices_for_missing_ss,
                            processed_file.drop_zero_prices,
                            processed_file.drop_zero_prices_alternative_parts,
                            processed_file.drop_alternative_equals_original,
                            processed_file.drop_null_part_no,
                            processed_file.drop_na_values,
-                           processed_file.vat_setter]
+                           processed_file.vat_setter,
+                           processed_file.drop_duplicates]
 
         for each_function in processing_list:
             each_function()

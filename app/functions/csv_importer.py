@@ -33,9 +33,6 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
 
         # name columns properly
         logging.debug(f"{self.filename}: naming columns")
-
-        # dataframe.columns = [self.columns_output_names[0], self.columns_output_names[1]]
-        # dataframe.columns = [self.columns_output_names[0], self.columns_output_names[1]]
         dataframe.columns = self.columns_output_names
 
         # change price strings to floats
