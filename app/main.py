@@ -6,7 +6,7 @@ from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper, GlobalSettings
 import os
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -57,7 +57,7 @@ def main(
             logging.debug("Using pyxlsb engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
-        elif filename.lower().endswith(('.csv', '.txt')):
+        elif filename.lower().endswith(('.csv', '.txt', '.asc')):
             typer.echo("Processing...")
             logging.debug("Using standard CSV Python engine")
             processed_file = CSVProcessingObject(filename, settings_file)
