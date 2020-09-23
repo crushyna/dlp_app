@@ -95,7 +95,3 @@ class DataframeHelpers:
 
         logging.debug(f"Excluded values: {exclusion_dataframe}")
         return exclusion_dataframe, fixed_dataframe
-
-    @staticmethod
-    def create_missing_prices(cls, result_df, loop_prefer_higher_price):
-        pass
