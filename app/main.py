@@ -6,7 +6,7 @@ from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper, GlobalSettings
 import os
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -15,7 +15,6 @@ if GlobalSettings.use_logs == 1:
 if GlobalSettings.return_console_messages == 0:
     def _disable_console_messages(*args, **kwargs):
         pass
-
 
     typer.echo = _disable_console_messages
 
@@ -58,7 +57,7 @@ def main(
             logging.debug("Using pyxlsb engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
-        elif filename.lower().endswith('.csv'):
+        elif filename.lower().endswith(('.csv', '.txt', '.asc')):
             typer.echo("Processing...")
             logging.debug("Using standard CSV Python engine")
             processed_file = CSVProcessingObject(filename, settings_file)
@@ -69,12 +68,15 @@ def main(
             raise typer.Exit()
 
         processing_list = [processed_file.drop_duplicates,
+                           processed_file.drop_loops,
+                           processed_file.create_prices_for_missing_ss,
                            processed_file.drop_zero_prices,
                            processed_file.drop_zero_prices_alternative_parts,
                            processed_file.drop_alternative_equals_original,
                            processed_file.drop_null_part_no,
                            processed_file.drop_na_values,
-                           processed_file.vat_setter]
+                           processed_file.vat_setter,
+                           processed_file.drop_duplicates]
 
         for each_function in processing_list:
             each_function()

@@ -33,18 +33,17 @@ class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions)
 
         # name columns properly
         logging.debug(f"{self.filename}: naming columns")
-        dataframe.columns = [self.columns_output_names[0], self.columns_output_names[1]]
+        dataframe.columns = self.columns_output_names
 
         # change price strings to floats
         logging.debug(f"{self.filename}: changing price to floats")
-        dataframe[self.columns_output_names[1]] = dataframe[self.columns_output_names[1]].str.replace(",", ".")
-        dataframe[self.columns_output_names[1]] = pd.to_numeric(dataframe[self.columns_output_names[1]])
+        dataframe.price = dataframe.price.str.replace(",", ".")
+        dataframe.price = pd.to_numeric(dataframe.price)
 
         # clear part_no column from floats (if occur)
         logging.debug(f"{self.filename}: clearing part_no column")
-        dataframe[self.columns_output_names[0]] = dataframe[self.columns_output_names[0]].astype(str)
-        dataframe[self.columns_output_names[0]] = dataframe[self.columns_output_names[0]].str.replace(r'[.][0]$', '',
-                                                                                                      regex=True)
+        dataframe.part_no = dataframe.part_no.astype(str)
+        dataframe.part_no = dataframe.part_no.str.replace(r'[.][0]$', '', regex=True)
 
         return dataframe
 
