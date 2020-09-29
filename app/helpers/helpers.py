@@ -1,10 +1,11 @@
 import configparser
 import logging
+import re
 from dataclasses import dataclass
 import os
 import sqlite3
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 import operator
 
 
@@ -16,6 +17,7 @@ class GlobalSettings:
     # TODO: delete str_* as they shouldn't be used
     acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
     localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
+    output_folder = config['GLOBAL_APP_SETTINGS']['output_folder']
     str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
     str_part_ss = config['GLOBAL_APP_SETTINGS']['str_part_ss']
     str_price = config['GLOBAL_APP_SETTINGS']['str_price']
@@ -56,7 +58,6 @@ class SaveTxtHelper:
 
 
 class DataframeHelpers:
-
     loop_query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
                 dataframe_1 ON (dataframe.ss = dataframe_1.part_no) AND (dataframe.part_no = dataframe_1.ss)"""
 
@@ -95,3 +96,12 @@ class DataframeHelpers:
 
         logging.debug(f"Excluded values: {exclusion_dataframe}")
         return exclusion_dataframe, fixed_dataframe
+
+    @staticmethod
+    def check_if_series_contain_special_chars(prices: Series):
+        string_check = re.compile('[@_!#$%^&*()<>?/\|}{~:+-]')
+        for each_element in prices:
+            if string_check.search(each_element) is None:
+                pass
+            else:
+                return True

@@ -6,7 +6,7 @@ from functions.excel_importer import ExcelProcessingObject
 from helpers.helpers import MainProgramHelper, GlobalSettings
 import os
 
-__version__ = "0.2.4"
+__version__ = "0.3.0"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -63,9 +63,16 @@ def main(
             processed_file = CSVProcessingObject(filename, settings_file)
 
         else:
-            typer.echo(f"{filename} file type is not supported!")
-            logging.critical(f"{filename} file type is not supported!")
-            raise typer.Exit()
+            try:
+                typer.echo("File type not found! Trying to process as a text file...")
+                logging.debug("Using standard CSV Python engine")
+                processed_file = CSVProcessingObject(filename, settings_file)
+
+            except Exception as er:
+                typer.echo(er)
+                typer.echo(f"{filename} file type is not supported!")
+                logging.critical(f"{filename} file type is not supported!")
+                raise typer.Exit()
 
         processing_list = [processed_file.drop_duplicates,
                            processed_file.drop_loops,
@@ -78,12 +85,14 @@ def main(
                            processed_file.vat_setter,
                            processed_file.drop_duplicates]
 
-        for each_function in processing_list:
-            each_function()
+        if not hasattr(processed_file, 'save_raw'):
 
-        typer.echo("Saving fixed-width file...")
-        processed_file.save_to_fwf_txt()
-        typer.echo(processed_file.initial_dataframe)
+            for each_function in processing_list:
+                each_function()
+
+            typer.echo("Saving fixed-width file...")
+            processed_file.save_to_fwf_txt()
+            typer.echo(processed_file.initial_dataframe)
 
         typer.echo("Done!")
         logging.info(f"{filename} processing finished!")

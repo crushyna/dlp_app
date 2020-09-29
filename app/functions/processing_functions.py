@@ -1,3 +1,5 @@
+import re
+import sys
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -100,10 +102,19 @@ class ProcessingFunctions:
 
                 additions_dataframe = pd.read_sql(DataframeHelpers.missing_ss_query, con=cnx)
                 additions_dataframe['ss_1'] = ''  # add temporary column
-                additions_dataframe.columns = self.columns_output_names  # and change it's name :)
+                additions_dataframe.columns = self.columns_input_names  # and change it's name :)
 
                 self.initial_dataframe = self.initial_dataframe.append(additions_dataframe, sort='false')
                 self.initial_dataframe.reset_index(inplace=True, drop=True)
+
+                # TODO: stick with this or set it in INI file.
+                result = DataframeHelpers.check_if_series_contain_special_chars(self.initial_dataframe.price)
+                if result is True:
+                    logging.warning("Special characters found! Prices will not be converted to floats.")
+                    typer.echo("Special characters found! Prices will not be converted to floats.")
+
+                else:
+                    self.initial_dataframe.price = pd.to_numeric(self.initial_dataframe.price)
 
                 cnx.close()
                 os.remove(database_name)
@@ -113,7 +124,7 @@ class ProcessingFunctions:
             logging.critical(er)
             logging.error(message)
             typer.echo(message)
-            raise typer.Exit()
+            sys.exit()
 
         return self.initial_dataframe
 
@@ -143,7 +154,7 @@ class ProcessingFunctions:
         """
         if self.na_values == 1:
             logging.debug("Dropping NA values")
-            self.initial_dataframe = self.initial_dataframe.dropna()
+            self.initial_dataframe = self.initial_dataframe.dropna(how='all')
 
         return self.initial_dataframe
 
@@ -171,50 +182,79 @@ class ProcessingFunctions:
             output_dataframe[GlobalSettings.str_price] = output_dataframe[GlobalSettings.str_price].round(
                 self.decimal_places)
         except TypeError as er:
-            logging.warning("Cannot convert prices to float! Assuming price as string.")
-            typer.echo(er)
+            logging.warning(f"{er}. Cannot convert prices to float! Assuming price as string.")
+            typer.echo(f"Type error: {er}. Assuming price as string.")
             prices_as_string = True
 
         # add timestamp mark
         if self.alternative_parts == 1:
-            output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99, '']  # add timestamp mark
+            logging.debug("Setting timestamp for alternative_parts == 1")
+            output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
 
         else:
-            output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99]  # add timestamp mark
+            logging.debug("Setting timestamp for alternative_parts == 0")
+            output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
 
         output_dataframe.index = output_dataframe.index + 1  # shift index
         output_dataframe.sort_index(inplace=True)  # sort index
 
-        if self.alternative_parts == 1:
-            output_dataframe = output_dataframe[
-                [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
-            fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
-                  f"%-{self.price_start - self.alternative_part_start}s" \
-                  f"%{self.price_length}.{self.decimal_places}f"
+        # check formatting
+        try:
+            if self.alternative_parts == 1:
+                logging.debug("Setting file formatting for alternative_parts == 1")
+                if prices_as_string:
+                    logging.debug("Setting file formatting where prices are strings")
+                    output_dataframe = output_dataframe[
+                        list(self.columns_output_names)]
+                    fmt = f"%-{self.column2_start - self.column1_start}s" \
+                          f"%-{self.column3_start - self.column2_start}s" \
+                          f"%{self.column3_length}s"
 
-        else:
-            if prices_as_string:
-                output_dataframe = output_dataframe[
-                    [GlobalSettings.str_part_no, GlobalSettings.str_price]]
-                fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
-                      f"%{(self.price_start - self.alternative_part_start) + self.price_length}s"
+                else:
+                    logging.debug("Setting file formatting where prices are floats")
+                    output_dataframe = output_dataframe[
+                        list(self.columns_output_names)]
+                    fmt = f"%-{self.column2_start - self.column1_start}s" \
+                          f"%-{self.column3_start - self.column2_start}s" \
+                          f"%{self.column3_length}.{self.decimal_places}f"
 
             else:
-                output_dataframe = output_dataframe[
-                    [GlobalSettings.str_part_no, GlobalSettings.str_price]]
-                fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
-                      f"%{(self.price_start - self.alternative_part_start) + self.price_length}.{self.decimal_places}f"
+                logging.debug("Setting file formatting for alternative_parts == 0")
+                if prices_as_string:
+                    logging.debug("Setting file formatting where prices are strings")
+                    output_dataframe = output_dataframe[
+                        list(self.columns_output_names)]
+                    fmt = f"%-{self.column2_start - self.column1_start}s" \
+                          f"%{(self.column3_start - self.column2_start) + self.column3_length}s"
+
+                else:
+                    logging.debug("Setting file formatting where prices are floats")
+                    output_dataframe = output_dataframe[
+                        list(self.columns_output_names)]
+                    fmt = f"%-{self.column2_start - self.column1_start}s" \
+                          f"%{(self.column3_start - self.column2_start) + self.column3_length}.{self.decimal_places}f"
+
+        except Exception as er:
+            logging.warning(er)
+            typer.echo(er)
+            sys.exit()
 
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
 
-        np.savetxt(fname=(os.path.join('app/output/', filename)), X=output_dataframe, fmt=fmt, encoding='utf-8')
+        try:
+            np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt, encoding='utf-8')
+
+        except Exception as er:
+            logging.warning(f"Error while writing .txt file! {er}")
+            typer.echo(f"Error while writing .txt file! {er}")
+            sys.exit()
 
         # Replace strings in .txt file
         logging.debug("Adding price list title")
-        SaveTxtHelper.replace_string(os.path.join('app/output/', filename), f'$${current_timestamp}    ',
+        SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
                                      f'PriceL{current_timestamp}')
         logging.debug("Replacing decimal separator")
-        SaveTxtHelper.replace_string(os.path.join('app/output/', filename), ".", ",")
+        SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
 
         logging.info("File saved successfully!")
         return 1

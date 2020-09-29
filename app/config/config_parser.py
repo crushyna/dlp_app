@@ -28,7 +28,10 @@ class LocalizationProcessingSettings:
                     setattr(self, each_element[0], tuple(str(x) for x in each_element[1].replace('(', '')
                                                          .replace(')', '')
                                                          .replace('...', '').split(', ')))
-
+            elif each_element[0] == 'columns_input_names':
+                setattr(self, each_element[0], tuple(str(x) for x in each_element[1].replace('(', '')
+                                                     .replace(')', '')
+                                                     .replace('...', '').split(', ')))
             elif each_element[0] == 'columns_output_names':
                 setattr(self, each_element[0], tuple(str(x) for x in each_element[1].replace('(', '')
                                                      .replace(')', '')
