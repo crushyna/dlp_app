@@ -21,21 +21,20 @@ class CustomPreProcessors:
         Select custom process based on country name and car manufacturer.
         """
         logging.info("File pre-processing triggered!")
-
+        logging.info(f"Running pre-processing for {country_name} / {make}")
         if country_name == "Ireland" and make == "Ford":
-            logging.info(f"Running pre-processing for {country_name} / {make}")
             return CustomPreProcessors.ireland_ford(filename)
 
         elif country_name == "Ireland" and make == "BMW":
-            logging.info(f"Running pre-processing for {country_name} / {make}")
             return CustomPreProcessors.ireland_bmw(filename, country_short, make)
 
+        elif country_name == "Ireland" and make == "Fiat":
+            return CustomPreProcessors.ireland_fiat(filename)
+
         elif country_name == "Australia" and make == "Porsche":
-            logging.info(f"Running pre-processing for {country_name} / {make}")
             return CustomPreProcessors.australia_porsche(filename)
 
         elif country_name == "Australia" and make == "Toyota":
-            logging.info(f"Running pre-processing for {country_name} / {make}")
             return CustomPreProcessors.australia_toyota(filename)
 
         else:
@@ -86,6 +85,29 @@ class CustomPreProcessors:
             outfile.write(content_new)
 
     @staticmethod
+    def ireland_fiat(filename: str):
+        fiat_file = filename
+        current_timestamp = datetime.now().strftime('%d%m%y')
+
+        partno_list = []
+        ss_list = []
+        price_list = []
+
+        with open(os.path.join(GlobalSettings.acquisiton_folder, fiat_file), 'r') as infile:
+            for each_line in infile:
+                partno_list.append(each_line[0:13])
+                price_list.append(each_line[19:24] + '.' + each_line[24:26])
+                ss_list.append(each_line[105:118])
+
+        partno_series = pd.Series(partno_list).astype(str)
+        ss_series = pd.Series(ss_list).astype(str)
+        price_series = pd.Series(price_list).astype(float)
+
+        dataframe = pd.DataFrame({"part_no": partno_series, "ss": ss_series, "price": price_series})
+
+        return dataframe
+
+    @staticmethod
     def australia_porsche(filename: str):
         porsche_file = filename
         porsche_fixed = "porsche_australia_tempfile"
@@ -114,7 +136,6 @@ class CustomPreProcessors:
     @staticmethod
     def australia_toyota(filename: str):
         toyota_file = filename
-
         partno_list = []
         ss_list = []
         price_list = []

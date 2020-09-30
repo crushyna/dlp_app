@@ -45,7 +45,7 @@ def main(
     if result is True:
 
         typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
-        logging.info(f"Starting file processing: {filename} with settings: {settings_file}")
+        logging.info(f"===> Starting file processing: {filename} with settings: {settings_file}")
 
         if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.odf', '.ods', '.odt')):
             typer.echo("Processing...")
@@ -68,7 +68,7 @@ def main(
                 logging.debug("Using standard CSV Python engine")
                 processed_file = CSVProcessingObject(filename, settings_file)
 
-            except Exception as er:
+            except FileNotFoundError as er:
                 typer.echo(er)
                 typer.echo(f"{filename} file type is not supported!")
                 logging.critical(f"{filename} file type is not supported!")
@@ -95,7 +95,7 @@ def main(
             typer.echo(processed_file.initial_dataframe)
 
         typer.echo("Done!")
-        logging.info(f"{filename} processing finished!")
+        logging.info(f"===> {filename} processing finished!")
 
     else:
         typer.echo(result)
