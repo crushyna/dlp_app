@@ -79,9 +79,9 @@ class SaveTxtHelper:
 
                         # TODO: this might need some fixing!
                     else:
-                        fmt = f"%-{column2_start - column1_start}s" \
-                              f"%-{column3_start - column2_start}.{decimal_places}f" \
-                              f"%{column3_length}s"
+                        fmt = f"%-{column1_length}s" \
+                              f"%+{column2_start - column2_length - 2}.{decimal_places}f" \
+                              f"%{column3_length*2 +3}s"
 
             else:
                 logging.debug("Setting file formatting for alternative_parts == 0")
@@ -96,8 +96,8 @@ class SaveTxtHelper:
                     logging.debug("Setting file formatting where prices are floats")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
-                    fmt = f"%-{column2_start - column1_start}s" \
-                          f"%{(column3_start - column2_start) + column3_length}.{decimal_places}f"
+                    fmt = f"%-{column1_length}s" \
+                          f"%{column2_length}.{decimal_places}f"
 
             return output_dataframe, fmt
 

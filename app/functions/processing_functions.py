@@ -138,7 +138,9 @@ class ProcessingFunctions:
             logging.debug("Dropping null part_no")
             self.initial_dataframe = self.initial_dataframe[(self.initial_dataframe.part_no != '0') &
                                                             (self.initial_dataframe.part_no != '0.0') &
-                                                            (self.initial_dataframe.part_no != 0)]
+                                                            (self.initial_dataframe.part_no != 0) &
+                                                            (self.initial_dataframe.part_no != '') &
+                                                            (self.initial_dataframe.part_no != ' ')]
 
         return self.initial_dataframe
 
@@ -209,16 +211,18 @@ class ProcessingFunctions:
                                                                   self.column3_length, self.decimal_places,
                                                                   self.alternative_float_column)
 
-        filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
-
         # clear whole dataframe from NAN's
         logging.debug("Clearing NaNs")
         output_dataframe = output_dataframe.fillna('')
 
         # set columns to strings (just in case they aren't)
         output_dataframe.part_no = output_dataframe.part_no.astype(str)
-        output_dataframe.ss = output_dataframe.ss.astype(str)
 
+        if self.alternative_parts == 1:
+            output_dataframe.ss = output_dataframe.ss.astype(str)
+
+        # set filename
+        filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
         try:
             np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt,
                        encoding='utf-8')
@@ -235,5 +239,10 @@ class ProcessingFunctions:
         logging.debug("Replacing decimal separator")
         SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
 
+        if self.alternative_float_column == 1:
+            logging.debug("Replacing '+' with empty character")
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), "+", "")
+
+        # finish process
         logging.info("File saved successfully!")
         return 1
