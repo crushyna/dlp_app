@@ -1,10 +1,12 @@
 import configparser
 import logging
 import re
+import sys
 from dataclasses import dataclass
 import os
 import sqlite3
 import pandas as pd
+import typer
 from pandas import DataFrame, Series
 import operator
 
@@ -41,6 +43,68 @@ class MainProgramHelper:
 
 
 class SaveTxtHelper:
+
+    @staticmethod
+    def set_file_formatting(alternative_parts: int,
+                            force_price_as_string: int,
+                            dataframe: object,
+                            columns_output_names: list,
+                            column1_start: int,
+                            column1_length: int,
+                            column2_start: int,
+                            column2_length: int,
+                            column3_start: int,
+                            column3_length: int,
+                            decimal_places: int,
+                            alternative_float_column: int):
+        try:
+            if alternative_parts == 1:
+                logging.debug("Setting file formatting for alternative_parts == 1")
+                if force_price_as_string == 1:
+                    logging.debug("Setting file formatting where prices are strings")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    fmt = f"%-{column2_start - column1_start}s" \
+                          f"%-{column3_start - column2_start}s" \
+                          f"%{column3_length}s"
+
+                else:
+                    logging.debug("Setting file formatting where prices are floats")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    if alternative_float_column != 1:
+                        fmt = f"%-{column2_start - column1_start}s" \
+                              f"%-{column3_start - column2_start}s" \
+                              f"%{column3_length}.{decimal_places}f"
+
+                        # TODO: this might need some fixing!
+                    else:
+                        fmt = f"%-{column2_start - column1_start}s" \
+                              f"%-{column3_start - column2_start}.{decimal_places}f" \
+                              f"%{column3_length}s"
+
+            else:
+                logging.debug("Setting file formatting for alternative_parts == 0")
+                if force_price_as_string == 1:
+                    logging.debug("Setting file formatting where prices are strings")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    fmt = f"%-{column2_start - column1_start}s" \
+                          f"%{(column3_start - column2_start) + column3_length}s"
+
+                else:
+                    logging.debug("Setting file formatting where prices are floats")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    fmt = f"%-{column2_start - column1_start}s" \
+                          f"%{(column3_start - column2_start) + column3_length}.{decimal_places}f"
+
+            return output_dataframe, fmt
+
+        except Exception as er:
+            logging.warning(er)
+            typer.echo(er)
+            sys.exit()
 
     @staticmethod
     def replace_string(filename: str, string: str, replacement: str):

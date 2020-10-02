@@ -85,6 +85,7 @@ def main(
                            processed_file.vat_setter,
                            processed_file.drop_duplicates]
 
+        # TODO: this has to be moved somewhere else!
         if not hasattr(processed_file, 'save_raw'):
 
             for each_function in processing_list:

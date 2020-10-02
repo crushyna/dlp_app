@@ -30,7 +30,7 @@ class ProcessingFunctions:
                 if self.prefer_higher_price == 1:
                     # add proper one
                     values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
-                                                                                                     keep='last')
+                                                                                              keep='last')
                     self.initial_dataframe = self.initial_dataframe.append(values_to_add, sort='false')
 
                     # save changes & reset index
@@ -65,7 +65,8 @@ class ProcessingFunctions:
                 df.to_sql(name='dataframe', con=cnx)
 
                 result_df = pd.read_sql(DataframeHelpers.loop_query, con=cnx)
-                exclusion_dataframe, fixed_dataframe = DataframeHelpers.clear_loops(result_df, self.loop_prefer_higher_price)
+                exclusion_dataframe, fixed_dataframe = DataframeHelpers.clear_loops(result_df,
+                                                                                    self.loop_prefer_higher_price)
 
                 self.initial_dataframe = pd.concat([self.initial_dataframe, exclusion_dataframe]).drop_duplicates(
                     keep=False)
@@ -153,15 +154,12 @@ class ProcessingFunctions:
         return self.initial_dataframe
 
     def drop_na_partno(self):
+        # TODO: barely happens, but nice to have
         """
-        Drops NA values across whole dataset.
+        Drop row when part_no is empty.
         :return:
         """
-        if self.na_values == 1:
-            logging.debug("Dropping NA values")
-            self.initial_dataframe = self.initial_dataframe.dropna(how='all')
-
-        return self.initial_dataframe
+        pass
 
     def vat_setter(self):
         if self.vat_setting in (1, 2):
@@ -202,59 +200,33 @@ class ProcessingFunctions:
         output_dataframe.sort_index(inplace=True)  # sort index
 
         # check formatting
-        try:
-            if self.alternative_parts == 1:
-                logging.debug("Setting file formatting for alternative_parts == 1")
-                if self.force_price_as_string == 1:
-                    logging.debug("Setting file formatting where prices are strings")
-                    output_dataframe = output_dataframe[
-                        list(self.columns_output_names)]
-                    fmt = f"%-{self.column2_start - self.column1_start}s" \
-                          f"%-{self.column3_start - self.column2_start}s" \
-                          f"%{self.column3_length}s"
-
-                else:
-                    logging.debug("Setting file formatting where prices are floats")
-                    output_dataframe = output_dataframe[
-                        list(self.columns_output_names)]
-                    # TODO: it does not work when columns with floats are switched
-                    fmt = f"%-{self.column2_start - self.column1_start}s" \
-                          f"%-{self.column3_start - self.column2_start}s" \
-                          f"%{self.column3_length}.{self.decimal_places}f"
-                    _fmt = f"%-{self.column2_start - self.column1_start}s" \
-                          f"%+{self.column3_start - self.column2_start}.{self.decimal_places}f" \
-                          f"%-{self.column3_length}s"
-
-            else:
-                logging.debug("Setting file formatting for alternative_parts == 0")
-                if self.force_price_as_string == 1:
-                    logging.debug("Setting file formatting where prices are strings")
-                    output_dataframe = output_dataframe[
-                        list(self.columns_output_names)]
-                    fmt = f"%-{self.column2_start - self.column1_start}s" \
-                          f"%{(self.column3_start - self.column2_start) + self.column3_length}s"
-
-                else:
-                    logging.debug("Setting file formatting where prices are floats")
-                    output_dataframe = output_dataframe[
-                        list(self.columns_output_names)]
-                    fmt = f"%-{self.column2_start - self.column1_start}s" \
-                          f"%{(self.column3_start - self.column2_start) + self.column3_length}.{self.decimal_places}f"
-
-        except Exception as er:
-            logging.warning(er)
-            typer.echo(er)
-            sys.exit()
+        output_dataframe, fmt = SaveTxtHelper.set_file_formatting(self.alternative_parts, self.force_price_as_string,
+                                                                  output_dataframe,
+                                                                  self.columns_output_names, self.column1_start,
+                                                                  self.column1_length,
+                                                                  self.column2_start, self.column2_length,
+                                                                  self.column3_start,
+                                                                  self.column3_length, self.decimal_places,
+                                                                  self.alternative_float_column)
 
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
 
-        try:
-            np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt, encoding='utf-8')
+        # clear whole dataframe from NAN's
+        logging.debug("Clearing NaNs")
+        output_dataframe = output_dataframe.fillna('')
 
-        except Exception as er:
-            logging.warning(f"Error while writing .txt file! {er}")
-            typer.echo(f"Error while writing .txt file! {er}")
-            sys.exit()
+        # set columns to strings (just in case they aren't)
+        output_dataframe.part_no = output_dataframe.part_no.astype(str)
+        output_dataframe.ss = output_dataframe.ss.astype(str)
+
+        try:
+            np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt,
+                       encoding='utf-8')
+
+        # TODO: this makes nightmares with Australia / FIAT / FAR
+        except TypeError as er:
+            logging.warning(f"Error while writing .txt file! {er}. Please check output file!")
+            typer.echo(f"Error while writing .txt file! {er}. Please check output file!")
 
         # Replace strings in .txt file
         logging.debug("Adding price list title")

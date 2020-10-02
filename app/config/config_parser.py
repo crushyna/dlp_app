@@ -36,6 +36,5 @@ class LocalizationProcessingSettings:
                 setattr(self, each_element[0], tuple(str(x) for x in each_element[1].replace('(', '')
                                                      .replace(')', '')
                                                      .replace('...', '').split(', ')))
-
             else:
                 setattr(self, each_element[0], each_element[1])
