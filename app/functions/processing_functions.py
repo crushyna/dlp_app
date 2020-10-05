@@ -1,3 +1,5 @@
+import re
+import sys
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -28,7 +30,7 @@ class ProcessingFunctions:
                 if self.prefer_higher_price == 1:
                     # add proper one
                     values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
-                                                                                                     keep='last')
+                                                                                              keep='last')
                     self.initial_dataframe = self.initial_dataframe.append(values_to_add, sort='false')
 
                     # save changes & reset index
@@ -63,7 +65,8 @@ class ProcessingFunctions:
                 df.to_sql(name='dataframe', con=cnx)
 
                 result_df = pd.read_sql(DataframeHelpers.loop_query, con=cnx)
-                exclusion_dataframe, fixed_dataframe = DataframeHelpers.clear_loops(result_df, self.loop_prefer_higher_price)
+                exclusion_dataframe, fixed_dataframe = DataframeHelpers.clear_loops(result_df,
+                                                                                    self.loop_prefer_higher_price)
 
                 self.initial_dataframe = pd.concat([self.initial_dataframe, exclusion_dataframe]).drop_duplicates(
                     keep=False)
@@ -100,10 +103,13 @@ class ProcessingFunctions:
 
                 additions_dataframe = pd.read_sql(DataframeHelpers.missing_ss_query, con=cnx)
                 additions_dataframe['ss_1'] = ''  # add temporary column
-                additions_dataframe.columns = self.columns_output_names  # and change it's name :)
+                additions_dataframe.columns = self.columns_input_names  # and change it's name :)
 
                 self.initial_dataframe = self.initial_dataframe.append(additions_dataframe, sort='false')
                 self.initial_dataframe.reset_index(inplace=True, drop=True)
+
+                if self.force_price_as_string == 0:
+                    self.initial_dataframe.price = pd.to_numeric(self.initial_dataframe.price)
 
                 cnx.close()
                 os.remove(database_name)
@@ -113,7 +119,7 @@ class ProcessingFunctions:
             logging.critical(er)
             logging.error(message)
             typer.echo(message)
-            raise typer.Exit()
+            sys.exit()
 
         return self.initial_dataframe
 
@@ -132,7 +138,9 @@ class ProcessingFunctions:
             logging.debug("Dropping null part_no")
             self.initial_dataframe = self.initial_dataframe[(self.initial_dataframe.part_no != '0') &
                                                             (self.initial_dataframe.part_no != '0.0') &
-                                                            (self.initial_dataframe.part_no != 0)]
+                                                            (self.initial_dataframe.part_no != 0) &
+                                                            (self.initial_dataframe.part_no != '') &
+                                                            (self.initial_dataframe.part_no != ' ')]
 
         return self.initial_dataframe
 
@@ -143,9 +151,17 @@ class ProcessingFunctions:
         """
         if self.na_values == 1:
             logging.debug("Dropping NA values")
-            self.initial_dataframe = self.initial_dataframe.dropna()
+            self.initial_dataframe = self.initial_dataframe.dropna(how='all')
 
         return self.initial_dataframe
+
+    def drop_na_partno(self):
+        # TODO: barely happens, but nice to have
+        """
+        Drop row when part_no is empty.
+        :return:
+        """
+        pass
 
     def vat_setter(self):
         if self.vat_setting in (1, 2):
@@ -162,59 +178,71 @@ class ProcessingFunctions:
         logging.debug(f"Saving dataframe to FWF text file")
 
         # get current timestamp
-        prices_as_string = False
         current_timestamp = datetime.now().strftime('%d%m%y')
 
         # round float values
         output_dataframe = self.initial_dataframe
-        try:
+        if self.force_price_as_string == 0:
             output_dataframe[GlobalSettings.str_price] = output_dataframe[GlobalSettings.str_price].round(
                 self.decimal_places)
-        except TypeError as er:
-            logging.warning("Cannot convert prices to float! Assuming price as string.")
-            typer.echo(er)
-            prices_as_string = True
+        else:
+            logging.warning(f"Prices will be saved as strings (FORCED).")
+            typer.echo(f"Prices will be saved as strings (FORCED).")
 
         # add timestamp mark
         if self.alternative_parts == 1:
-            output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99, '']  # add timestamp mark
+            logging.debug("Setting timestamp for alternative_parts == 1")
+            output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
 
         else:
-            output_dataframe.loc[-1] = [f'$${current_timestamp}', 9.99]  # add timestamp mark
+            logging.debug("Setting timestamp for alternative_parts == 0")
+            output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
 
         output_dataframe.index = output_dataframe.index + 1  # shift index
         output_dataframe.sort_index(inplace=True)  # sort index
 
+        # check formatting
+        output_dataframe, fmt = SaveTxtHelper.set_file_formatting(self.alternative_parts, self.force_price_as_string,
+                                                                  output_dataframe,
+                                                                  self.columns_output_names, self.column1_start,
+                                                                  self.column1_length,
+                                                                  self.column2_start, self.column2_length,
+                                                                  self.column3_start,
+                                                                  self.column3_length, self.decimal_places,
+                                                                  self.alternative_float_column)
+
+        # clear whole dataframe from NAN's
+        logging.debug("Clearing NaNs")
+        output_dataframe = output_dataframe.fillna('')
+
+        # set columns to strings (just in case they aren't)
+        output_dataframe.part_no = output_dataframe.part_no.astype(str)
+
         if self.alternative_parts == 1:
-            output_dataframe = output_dataframe[
-                [GlobalSettings.str_part_no, GlobalSettings.str_part_ss, GlobalSettings.str_price]]
-            fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
-                  f"%-{self.price_start - self.alternative_part_start}s" \
-                  f"%{self.price_length}.{self.decimal_places}f"
+            output_dataframe.ss = output_dataframe.ss.astype(str)
 
-        else:
-            if prices_as_string:
-                output_dataframe = output_dataframe[
-                    [GlobalSettings.str_part_no, GlobalSettings.str_price]]
-                fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
-                      f"%{(self.price_start - self.alternative_part_start) + self.price_length}s"
-
-            else:
-                output_dataframe = output_dataframe[
-                    [GlobalSettings.str_part_no, GlobalSettings.str_price]]
-                fmt = f"%-{self.alternative_part_start - self.partno_start}s" \
-                      f"%{(self.price_start - self.alternative_part_start) + self.price_length}.{self.decimal_places}f"
-
+        # set filename
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
+        try:
+            np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt,
+                       encoding='utf-8')
 
-        np.savetxt(fname=(os.path.join('app/output/', filename)), X=output_dataframe, fmt=fmt, encoding='utf-8')
+        # TODO: this makes nightmares with Australia / FIAT / FAR
+        except TypeError as er:
+            logging.warning(f"Error while writing .txt file! {er}. Please check output file!")
+            typer.echo(f"Error while writing .txt file! {er}. Please check output file!")
 
         # Replace strings in .txt file
         logging.debug("Adding price list title")
-        SaveTxtHelper.replace_string(os.path.join('app/output/', filename), f'$${current_timestamp}    ',
+        SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
                                      f'PriceL{current_timestamp}')
         logging.debug("Replacing decimal separator")
-        SaveTxtHelper.replace_string(os.path.join('app/output/', filename), ".", ",")
+        SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
 
+        if self.alternative_float_column == 1:
+            logging.debug("Replacing '+' with empty character")
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), "+", "")
+
+        # finish process
         logging.info("File saved successfully!")
-        return 1
+        return filename

@@ -16,7 +16,10 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
         self.settings_file = settings_file
         self.engine = None if engine is None else engine
 
-        self.initial_dataframe = CustomPreProcessors.run_custom(self.country_name, self.make, self.filename) \
+        self.initial_dataframe = CustomPreProcessors.run_custom(self.country_name,
+                                                                self.make,
+                                                                self.filename,
+                                                                self.country_short) \
             if self.custom_settings == 1 else self.read_csv_file()
 
     def read_csv_file(self):
@@ -35,7 +38,7 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
 
             # name columns properly
             logging.debug(f"{self.filename}: naming columns")
-            dataframe.columns = self.columns_output_names
+            dataframe.columns = self.columns_input_names
 
             # change price strings to floats
             logging.debug(f"{self.filename}: changing price to floats")

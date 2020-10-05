@@ -33,7 +33,7 @@ class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions)
 
         # name columns properly
         logging.debug(f"{self.filename}: naming columns")
-        dataframe.columns = self.columns_output_names
+        dataframe.columns = self.columns_input_names
 
         # change price strings to floats
         logging.debug(f"{self.filename}: changing price to floats")

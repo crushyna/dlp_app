@@ -1,12 +1,12 @@
 import typer
 import logging
 from typing import Optional
+from helpers.helpers import MainProgramHelper, GlobalSettings
 from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
-from helpers.helpers import MainProgramHelper, GlobalSettings
 import os
 
-__version__ = "0.2.4"
+__version__ = "0.3.1"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -15,6 +15,7 @@ if GlobalSettings.use_logs == 1:
 if GlobalSettings.return_console_messages == 0:
     def _disable_console_messages(*args, **kwargs):
         pass
+
 
     typer.echo = _disable_console_messages
 
@@ -33,7 +34,7 @@ def main(
         version: Optional[bool] = typer.Option(
             None, "--version", callback=version_callback
         )
-        ):
+):
     """
     Entry point for application!
     :param filename:
@@ -45,7 +46,7 @@ def main(
     if result is True:
 
         typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
-        logging.info(f"Starting file processing: {filename} with settings: {settings_file}")
+        logging.info(f"===> Starting file processing: {filename} with settings: {settings_file}")
 
         if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.odf', '.ods', '.odt')):
             typer.echo("Processing...")
@@ -63,9 +64,16 @@ def main(
             processed_file = CSVProcessingObject(filename, settings_file)
 
         else:
-            typer.echo(f"{filename} file type is not supported!")
-            logging.critical(f"{filename} file type is not supported!")
-            raise typer.Exit()
+            try:
+                typer.echo("File type not recognized! Trying to process as a text file...")
+                logging.debug("Using standard CSV Python engine")
+                processed_file = CSVProcessingObject(filename, settings_file)
+
+            except FileNotFoundError as er:
+                typer.echo(er)
+                typer.echo(f"{filename} file type is not supported!")
+                logging.critical(f"{filename} file type is not supported!")
+                raise typer.Exit()
 
         processing_list = [processed_file.drop_duplicates,
                            processed_file.drop_loops,
@@ -78,15 +86,20 @@ def main(
                            processed_file.vat_setter,
                            processed_file.drop_duplicates]
 
-        for each_function in processing_list:
-            each_function()
+        # TODO: this has to be moved somewhere else!
+        if not hasattr(processed_file, 'save_raw'):
 
-        typer.echo("Saving fixed-width file...")
-        processed_file.save_to_fwf_txt()
-        typer.echo(processed_file.initial_dataframe)
+            for each_function in processing_list:
+                each_function()
+
+            typer.echo("Saving fixed-width file...")
+            output_filename = processed_file.save_to_fwf_txt()
+            typer.echo(processed_file.initial_dataframe)
 
         typer.echo("Done!")
-        logging.info(f"{filename} processing finished!")
+        logging.info(f"===> {output_filename} file created.")
+        logging.info(f"===> {filename} processing finished!")
+
 
     else:
         typer.echo(result)

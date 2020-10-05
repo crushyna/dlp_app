@@ -1,10 +1,13 @@
 import configparser
 import logging
+import re
+import sys
 from dataclasses import dataclass
 import os
 import sqlite3
 import pandas as pd
-from pandas import DataFrame
+import typer
+from pandas import DataFrame, Series
 import operator
 
 
@@ -16,6 +19,7 @@ class GlobalSettings:
     # TODO: delete str_* as they shouldn't be used
     acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
     localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
+    output_folder = config['GLOBAL_APP_SETTINGS']['output_folder']
     str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
     str_part_ss = config['GLOBAL_APP_SETTINGS']['str_part_ss']
     str_price = config['GLOBAL_APP_SETTINGS']['str_price']
@@ -41,6 +45,68 @@ class MainProgramHelper:
 class SaveTxtHelper:
 
     @staticmethod
+    def set_file_formatting(alternative_parts: int,
+                            force_price_as_string: int,
+                            dataframe: object,
+                            columns_output_names: list,
+                            column1_start: int,
+                            column1_length: int,
+                            column2_start: int,
+                            column2_length: int,
+                            column3_start: int,
+                            column3_length: int,
+                            decimal_places: int,
+                            alternative_float_column: int):
+        try:
+            if alternative_parts == 1:
+                logging.debug("Setting file formatting for alternative_parts == 1")
+                if force_price_as_string == 1:
+                    logging.debug("Setting file formatting where prices are strings")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                          f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
+                          f"%{column3_length}s"
+
+                else:
+                    logging.debug("Setting file formatting where prices are floats")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    if alternative_float_column != 1:
+                        fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                              f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
+                              f"%{column3_length}.{decimal_places}f"
+
+                        # TODO: this might need some fixing!
+                    else:
+                        fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                              f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
+                              f"%-{column3_length}.{decimal_places}f"
+
+            else:
+                logging.debug("Setting file formatting for alternative_parts == 0")
+                if force_price_as_string == 1:
+                    logging.debug("Setting file formatting where prices are strings")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                          f"%-{column2_length}s"
+
+                else:
+                    logging.debug("Setting file formatting where prices are floats")
+                    output_dataframe = dataframe[
+                        list(columns_output_names)]
+                    fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                          f"%-{column2_length}.{decimal_places}f"
+
+            return output_dataframe, fmt
+
+        except Exception as er:
+            logging.warning(er)
+            typer.echo(er)
+            sys.exit()
+
+    @staticmethod
     def replace_string(filename: str, string: str, replacement: str):
         with open(filename, 'r', encoding='utf8') as file:
             filedata = file.read()
@@ -56,7 +122,6 @@ class SaveTxtHelper:
 
 
 class DataframeHelpers:
-
     loop_query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
                 dataframe_1 ON (dataframe.ss = dataframe_1.part_no) AND (dataframe.part_no = dataframe_1.ss)"""
 
@@ -95,3 +160,12 @@ class DataframeHelpers:
 
         logging.debug(f"Excluded values: {exclusion_dataframe}")
         return exclusion_dataframe, fixed_dataframe
+
+    @staticmethod
+    def check_if_series_contain_special_chars(prices: Series):
+        string_check = re.compile('[@_!#$%^&*()<>?/\|}{~:+-]')
+        for each_element in prices:
+            if string_check.search(each_element) is None:
+                pass
+            else:
+                return True
