@@ -2,6 +2,8 @@ import logging
 import pandas as pd
 import os
 import typer
+from pandas import DataFrame
+
 from config.config_parser import LocalizationProcessingSettings
 from functions.custom_preprocessors import CustomPreProcessors
 from functions.processing_functions import ProcessingFunctions
@@ -22,7 +24,7 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
                                                                 self.country_short) \
             if self.custom_settings == 1 else self.read_csv_file()
 
-    def read_csv_file(self):
+    def read_csv_file(self) -> DataFrame:
         try:
             logging.info(f"Reading CSV file: {self.filename}")
             dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, self.filename),

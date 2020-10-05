@@ -49,17 +49,14 @@ def main(
         logging.info(f"===> Starting file processing: {filename} with settings: {settings_file}")
 
         if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.odf', '.ods', '.odt')):
-            typer.echo("Processing...")
             logging.debug("Using xlrd engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='xlrd')
 
         elif filename.lower().endswith('.xlsb'):
-            typer.echo("Processing...")
             logging.debug("Using pyxlsb engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
         elif filename.lower().endswith(('.csv', '.txt', '.asc')):
-            typer.echo("Processing...")
             logging.debug("Using standard CSV Python engine")
             processed_file = CSVProcessingObject(filename, settings_file)
 
@@ -99,7 +96,6 @@ def main(
         typer.echo("Done!")
         logging.info(f"===> {output_filename} file created.")
         logging.info(f"===> {filename} processing finished!")
-
 
     else:
         typer.echo(result)

@@ -16,7 +16,7 @@ class ProcessingFunctions:
 
     # TODO: deleting symbols like ,.[]\-= from part number
 
-    def drop_duplicates(self):
+    def drop_duplicates(self) -> object:
         if self.part_number_duplicates == 1:
             logging.debug("Dropping duplicates")
             self.initial_dataframe.drop_duplicates(inplace=True)
@@ -50,7 +50,7 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
-    def drop_loops(self):
+    def drop_loops(self) -> object:
         # TODO: works! but clean it!
         """
         iteritems and iterrows is too slow. Local temporary database is required.
@@ -84,14 +84,14 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
-    def drop_zero_prices(self):
+    def drop_zero_prices(self) -> object:
         if self.zero_prices == 1:
             logging.debug("Dropping zero prices")
             self.initial_dataframe = self.initial_dataframe[self.initial_dataframe.price != 0]
 
         return self.initial_dataframe
 
-    def create_prices_for_missing_ss(self):
+    def create_prices_for_missing_ss(self) -> object:
         try:
             if self.add_prices_for_missing_ss == 1:
                 logging.debug("Creating missing prices for SS")
@@ -129,7 +129,7 @@ class ProcessingFunctions:
     def drop_alternative_equals_original(self):
         pass
 
-    def drop_null_part_no(self):
+    def drop_null_part_no(self) -> object:
         """
         This might not work as expected and will require some fixing, since column PART_NO might be a string.
         :return: initial_dataframe
@@ -144,7 +144,7 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
-    def drop_na_values(self):
+    def drop_na_values(self) -> object:
         """
         Drops NA values across whole dataset.
         :return:
@@ -163,7 +163,7 @@ class ProcessingFunctions:
         """
         pass
 
-    def vat_setter(self):
+    def vat_setter(self) -> object:
         if self.vat_setting in (1, 2):
             logging.debug("Calculating new prices (VAT)")
             if self.vat_setting == 1:
@@ -174,7 +174,7 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
-    def save_to_fwf_txt(self):
+    def save_to_fwf_txt(self) -> str:
         logging.debug(f"Saving dataframe to FWF text file")
 
         # get current timestamp
@@ -245,4 +245,5 @@ class ProcessingFunctions:
 
         # finish process
         logging.info("File saved successfully!")
+
         return filename

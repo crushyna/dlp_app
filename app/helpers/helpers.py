@@ -5,6 +5,8 @@ import sys
 from dataclasses import dataclass
 import os
 import sqlite3
+from typing import Tuple
+
 import pandas as pd
 import typer
 from pandas import DataFrame, Series
@@ -31,7 +33,7 @@ class GlobalSettings:
 class MainProgramHelper:
 
     @staticmethod
-    def check_if_files_exist(filename: str, settings_file: str):
+    def check_if_files_exist(filename: str, settings_file: str) -> str or bool:
         if not os.path.isfile(os.path.join(GlobalSettings.acquisiton_folder, filename)):
             return f"File {filename} does not exist!"
 
@@ -56,7 +58,7 @@ class SaveTxtHelper:
                             column3_start: int,
                             column3_length: int,
                             decimal_places: int,
-                            alternative_float_column: int):
+                            alternative_float_column: int) -> (DataFrame, str):
         try:
             if alternative_parts == 1:
                 logging.debug("Setting file formatting for alternative_parts == 1")
@@ -107,7 +109,7 @@ class SaveTxtHelper:
             sys.exit()
 
     @staticmethod
-    def replace_string(filename: str, string: str, replacement: str):
+    def replace_string(filename: str, string: str, replacement: str) -> str:
         with open(filename, 'r', encoding='utf8') as file:
             filedata = file.read()
 
@@ -129,9 +131,9 @@ class DataframeHelpers:
     dataframe.part_no FROM dataframe) AND dataframe.ss != ''"""
 
     @staticmethod
-    def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int):
+    def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int) -> Tuple[DataFrame, DataFrame]:
 
-        # TODO: this may require some cleaning and logging implementation
+        # TODO: this may require some cleaning
         fixed_dataframe = pd.DataFrame(columns=result_df.columns)
         exclusion_dataframe = pd.DataFrame(columns=result_df.columns)
         for each_index, each_row in result_df.iterrows():
@@ -162,7 +164,12 @@ class DataframeHelpers:
         return exclusion_dataframe, fixed_dataframe
 
     @staticmethod
-    def check_if_series_contain_special_chars(prices: Series):
+    def check_if_series_contain_special_chars(prices: Series) -> bool:
+        """
+        currently not used
+        :param prices:
+        :return: bool
+        """
         string_check = re.compile('[@_!#$%^&*()<>?/\|}{~:+-]')
         for each_element in prices:
             if string_check.search(each_element) is None:

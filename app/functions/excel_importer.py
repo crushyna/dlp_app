@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import xlrd
 import pyxlsb
+from pandas import DataFrame
 
 from config.config_parser import LocalizationProcessingSettings
 from functions.processing_functions import ProcessingFunctions
@@ -19,7 +20,7 @@ class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions)
 
         self.initial_dataframe = self.read_excel_file()
 
-    def read_excel_file(self):
+    def read_excel_file(self) -> DataFrame:
         logging.info(f"Reading Excel file: {self.filename}")
         dataframe = pd.read_excel(os.path.join(GlobalSettings.acquisiton_folder, self.filename),
                                   header=None if self.header is None else self.header,

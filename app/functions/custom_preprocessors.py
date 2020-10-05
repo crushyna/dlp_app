@@ -1,9 +1,14 @@
 import logging
 import os
+from typing import List
+
 import pandas as pd
 import re
 import typer
 from datetime import datetime
+
+from pandas import DataFrame
+
 from helpers.helpers import GlobalSettings
 
 
@@ -14,16 +19,16 @@ class CustomPreProcessors:
     OR save file directly (when save_raw = 1).
     """
 
-    partno_list = []
-    ss_list = []
-    price_list = []
+    partno_list: List[str] = []
+    ss_list: List[str] = []
+    price_list: List[str or float] = []
 
     partno_series = pd.Series(dtype=str)
     ss_series = pd.Series(dtype=str)
     price_series = pd.Series(dtype=str)
 
     @staticmethod
-    def run_custom(country_name: str, make: str, filename: str, country_short: str):
+    def run_custom(country_name: str, make: str, filename: str, country_short: str) -> DataFrame or bool:
         """
         Select custom process based on country name and car manufacturer.
         """
@@ -54,7 +59,7 @@ class CustomPreProcessors:
             raise typer.Exit()
 
     @classmethod
-    def ireland_ford(cls, filename):
+    def ireland_ford(cls, filename) -> DataFrame:
         ford_file = filename
         ford_fixed = "ford_ireland_tempfile"
 
@@ -80,7 +85,7 @@ class CustomPreProcessors:
         return dataframe
 
     @staticmethod
-    def ireland_bmw(filename: str, country_short: str, make: str):
+    def ireland_bmw(filename: str, country_short: str, make: str) -> bool:
         bmw_file = filename
         current_timestamp = datetime.now().strftime('%d%m%y')
         output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
@@ -91,8 +96,10 @@ class CustomPreProcessors:
             content_new = re.sub("(.{60})", "\\1\n", content, 0, re.DOTALL)
             outfile.write(content_new)
 
+        return True
+
     @classmethod
-    def ireland_fiat(cls, filename: str):
+    def ireland_fiat(cls, filename: str) -> DataFrame:
         fiat_file = filename
 
         with open(os.path.join(GlobalSettings.acquisiton_folder, fiat_file), 'r') as infile:
@@ -110,7 +117,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def australia_porsche(cls, filename: str):
+    def australia_porsche(cls, filename: str) -> DataFrame:
         porsche_file = filename
         porsche_fixed = "porsche_australia_tempfile"
 
@@ -133,7 +140,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def australia_toyota(cls, filename: str):
+    def australia_toyota(cls, filename: str) -> DataFrame:
         toyota_file = filename
 
         with open(os.path.join(GlobalSettings.acquisiton_folder, toyota_file), 'r') as infile:
@@ -155,7 +162,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def australia_kia(cls, filename: str):
+    def australia_kia(cls, filename: str) -> DataFrame:
         kia_file = filename
 
         with open(os.path.join(GlobalSettings.acquisiton_folder, kia_file), 'r') as infile:
