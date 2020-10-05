@@ -245,4 +245,4 @@ class ProcessingFunctions:
 
         # finish process
         logging.info("File saved successfully!")
-        return 1
+        return filename

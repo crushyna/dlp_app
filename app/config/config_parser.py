@@ -1,13 +1,23 @@
 import configparser
+import logging
+from configparser import DuplicateOptionError
 import os
+
+import typer
 
 from helpers.helpers import GlobalSettings
 
 
 class LocalizationProcessingSettings:
     def __init__(self, config_filename: str):
-        config = configparser.ConfigParser()
-        config.read(os.path.join(GlobalSettings.localization_folder, config_filename))
+        try:
+            config = configparser.ConfigParser()
+            config.read(os.path.join(GlobalSettings.localization_folder, config_filename))
+
+        except DuplicateOptionError as er:
+            typer.echo(f"Settings file error: {er}!")
+            logging.critical(f"Settings file error: {er}!")
+            raise typer.Exit()
 
         for each_element in config.items('COUNTRY_SETTINGS'):
             if each_element[1] == 'None':

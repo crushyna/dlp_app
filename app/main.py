@@ -1,12 +1,12 @@
 import typer
 import logging
 from typing import Optional
+from helpers.helpers import MainProgramHelper, GlobalSettings
 from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
-from helpers.helpers import MainProgramHelper, GlobalSettings
 import os
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -15,6 +15,7 @@ if GlobalSettings.use_logs == 1:
 if GlobalSettings.return_console_messages == 0:
     def _disable_console_messages(*args, **kwargs):
         pass
+
 
     typer.echo = _disable_console_messages
 
@@ -33,7 +34,7 @@ def main(
         version: Optional[bool] = typer.Option(
             None, "--version", callback=version_callback
         )
-        ):
+):
     """
     Entry point for application!
     :param filename:
@@ -64,7 +65,7 @@ def main(
 
         else:
             try:
-                typer.echo("File type not found! Trying to process as a text file...")
+                typer.echo("File type not recognized! Trying to process as a text file...")
                 logging.debug("Using standard CSV Python engine")
                 processed_file = CSVProcessingObject(filename, settings_file)
 
@@ -92,11 +93,13 @@ def main(
                 each_function()
 
             typer.echo("Saving fixed-width file...")
-            processed_file.save_to_fwf_txt()
+            output_filename = processed_file.save_to_fwf_txt()
             typer.echo(processed_file.initial_dataframe)
 
         typer.echo("Done!")
+        logging.info(f"===> {output_filename} file created.")
         logging.info(f"===> {filename} processing finished!")
+
 
     else:
         typer.echo(result)

@@ -64,8 +64,8 @@ class SaveTxtHelper:
                     logging.debug("Setting file formatting where prices are strings")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
-                    fmt = f"%-{column2_start - column1_start}s" \
-                          f"%-{column3_start - column2_start}s" \
+                    fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                          f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                           f"%{column3_length}s"
 
                 else:
@@ -73,15 +73,15 @@ class SaveTxtHelper:
                     output_dataframe = dataframe[
                         list(columns_output_names)]
                     if alternative_float_column != 1:
-                        fmt = f"%-{column2_start - column1_start}s" \
-                              f"%-{column3_start - column2_start}s" \
+                        fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                              f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%{column3_length}.{decimal_places}f"
 
                         # TODO: this might need some fixing!
                     else:
-                        fmt = f"%-{column1_length}s" \
-                              f"%+{column2_start - column2_length - 2}.{decimal_places}f" \
-                              f"%{column3_length*2 +3}s"
+                        fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                              f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
+                              f"%-{column3_length}.{decimal_places}f"
 
             else:
                 logging.debug("Setting file formatting for alternative_parts == 0")
@@ -89,15 +89,15 @@ class SaveTxtHelper:
                     logging.debug("Setting file formatting where prices are strings")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
-                    fmt = f"%-{column2_start - column1_start}s" \
-                          f"%{(column3_start - column2_start) + column3_length}s"
+                    fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                          f"%-{column2_length}s"
 
                 else:
                     logging.debug("Setting file formatting where prices are floats")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
-                    fmt = f"%-{column1_length}s" \
-                          f"%{column2_length}.{decimal_places}f"
+                    fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                          f"%-{column2_length}.{decimal_places}f"
 
             return output_dataframe, fmt
 

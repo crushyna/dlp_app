@@ -4,7 +4,6 @@ import pandas as pd
 import re
 import typer
 from datetime import datetime
-from config.config_parser import LocalizationProcessingSettings
 from helpers.helpers import GlobalSettings
 
 
