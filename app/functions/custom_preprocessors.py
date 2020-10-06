@@ -27,8 +27,10 @@ class CustomPreProcessors:
     ss_series = pd.Series(dtype=str)
     price_series = pd.Series(dtype=str)
 
+    output_filename: str
+
     @staticmethod
-    def run_custom(country_name: str, make: str, filename: str, country_short: str) -> DataFrame or bool:
+    def run_custom(country_name: str, make: str, filename: str, country_short: str) -> DataFrame or str:
         """
         Select custom process based on country name and car manufacturer.
         """
@@ -52,6 +54,12 @@ class CustomPreProcessors:
         elif country_name == "Australia" and make == "KIA":
             return CustomPreProcessors.australia_kia(filename)
 
+        elif country_name == "Australia" and make == "Tesla":
+            return CustomPreProcessors.australia_tesla(filename)
+
+        elif country_name == "Australia" and make == "TeslaSS":
+            return CustomPreProcessors.australia_tesla_ss(filename, country_short, make)
+
         else:
             message = "Custom pre-processing settings not found!"
             logging.error(message)
@@ -63,7 +71,8 @@ class CustomPreProcessors:
         ford_file = filename
         ford_fixed = "ford_ireland_tempfile"
 
-        with open(os.path.join(GlobalSettings.acquisiton_folder, ford_file), 'r') as infile, open(ford_fixed, 'w') as outfile:
+        with open(os.path.join(GlobalSettings.acquisiton_folder, ford_file), 'r') as infile, open(ford_fixed,
+                                                                                                  'w') as outfile:
             content = infile.read()
             content_new = re.sub("P.N.E.", "  0.00", content, 0, re.DOTALL)
             outfile.write(content_new)
@@ -84,19 +93,19 @@ class CustomPreProcessors:
 
         return dataframe
 
-    @staticmethod
-    def ireland_bmw(filename: str, country_short: str, make: str) -> bool:
+    @classmethod
+    def ireland_bmw(cls, filename: str, country_short: str, make: str) -> str:
         bmw_file = filename
         current_timestamp = datetime.now().strftime('%d%m%y')
-        output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
 
         with open(os.path.join(GlobalSettings.acquisiton_folder, bmw_file), 'r') as infile, \
-                open(os.path.join(GlobalSettings.output_folder, output_filename), 'w') as outfile:
+                open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'w') as outfile:
             content = infile.read()
             content_new = re.sub("(.{60})", "\\1\n", content, 0, re.DOTALL)
             outfile.write(content_new)
 
-        return True
+        return cls.output_filename
 
     @classmethod
     def ireland_fiat(cls, filename: str) -> DataFrame:
@@ -121,7 +130,8 @@ class CustomPreProcessors:
         porsche_file = filename
         porsche_fixed = "porsche_australia_tempfile"
 
-        with open(os.path.join(GlobalSettings.acquisiton_folder, porsche_file), 'r') as infile, open(porsche_fixed, 'w') as outfile:
+        with open(os.path.join(GlobalSettings.acquisiton_folder, porsche_file), 'r') as infile, open(porsche_fixed,
+                                                                                                     'w') as outfile:
             content = infile.read()
             content_new = re.sub("(.{500})", "\\1\n", content, 0, re.DOTALL)
             outfile.write(content_new)
@@ -184,3 +194,40 @@ class CustomPreProcessors:
         dataframe.part_no = dataframe.part_no.str.strip()
 
         return dataframe
+
+    @classmethod
+    def australia_tesla(cls, filename: str) -> DataFrame:
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), names=['part_no', 'price', 'currency', 'ss'], header=0)
+        dataframe = dataframe[['part_no', 'ss', 'price']][dataframe.ss == 'AU']
+
+        dataframe.part_no = dataframe.part_no.str.replace("-", "")
+        dataframe.part_no = dataframe.part_no.astype(str)
+        dataframe.ss = dataframe.ss.astype(str)
+        dataframe.price = dataframe.price.astype(float)
+
+        return dataframe
+
+    @classmethod
+    def australia_tesla_ss(cls, filename: str, country_short: str, make: str) -> str:
+        from numpy import savetxt
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename))
+
+        dataframe.OldPart = dataframe.OldPart.str.replace("-", "")
+        dataframe.NewPart = dataframe.NewPart.str.replace("-", "")
+
+        fmt = f"%-13s%-13s%-8s%+15s"
+        header = "OldPart      NewPart      ServiceabilityModReason"
+
+        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
+
+        with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header)
+
+        return cls.output_filename
+
+

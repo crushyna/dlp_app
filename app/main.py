@@ -1,12 +1,13 @@
 import typer
 import logging
 from typing import Optional
+from functions.custom_preprocessors import CustomPreProcessors
 from helpers.helpers import MainProgramHelper, GlobalSettings
 from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 import os
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -91,10 +92,11 @@ def main(
 
             typer.echo("Saving fixed-width file...")
             output_filename = processed_file.save_to_fwf_txt()
+            logging.info(f"===> {output_filename} file created.")
             typer.echo(processed_file.initial_dataframe)
 
         typer.echo("Done!")
-        logging.info(f"===> {output_filename} file created.")
+        logging.info(f"===> {CustomPreProcessors.output_filename} file created.")
         logging.info(f"===> {filename} processing finished!")
 
     else:

@@ -92,14 +92,14 @@ class SaveTxtHelper:
                     output_dataframe = dataframe[
                         list(columns_output_names)]
                     fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
-                          f"%-{column2_length}s"
+                          f"%+{column2_length}s"
 
                 else:
                     logging.debug("Setting file formatting where prices are floats")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
                     fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
-                          f"%-{column2_length}.{decimal_places}f"
+                          f"%+{column2_length}.{decimal_places}f"
 
             return output_dataframe, fmt
 

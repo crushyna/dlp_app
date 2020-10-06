@@ -176,12 +176,24 @@ class ProcessingFunctions:
 
     def save_to_fwf_txt(self) -> str:
         logging.debug(f"Saving dataframe to FWF text file")
+        output_dataframe = self.initial_dataframe
 
         # get current timestamp
         current_timestamp = datetime.now().strftime('%d%m%y')
 
-        # round float values
-        output_dataframe = self.initial_dataframe
+        # TODO: add trigger for this
+        '''
+        logging.debug("Removing unwanted characters")
+        output_dataframe.part_no = output_dataframe.part_no.str.replace("-", "")
+        output_dataframe.ss = output_dataframe.ss.str.replace("-", "")
+        '''
+
+        # TODO: add trigger for this, but also needs to be implemented somewhere else
+        '''
+        logging.debug("Removing unwanted characters")
+        output_dataframe.ss = output_dataframe.ss.str.replace("O", "")
+        '''
+
         if self.force_price_as_string == 0:
             output_dataframe[GlobalSettings.str_price] = output_dataframe[GlobalSettings.str_price].round(
                 self.decimal_places)
@@ -236,12 +248,16 @@ class ProcessingFunctions:
         logging.debug("Adding price list title")
         SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
                                      f'PriceL{current_timestamp}')
+
+        # TODO: add trigger for this
+        '''
         logging.debug("Replacing decimal separator")
         SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
+        '''
 
         if self.alternative_float_column == 1:
             logging.debug("Replacing '+' with empty character")
-            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), "+", "")
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), "+", " ")
 
         # finish process
         logging.info("File saved successfully!")
