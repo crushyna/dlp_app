@@ -62,7 +62,7 @@ class ProcessingFunctions:
                 logging.debug("Dropping loops")
                 import sqlite3
                 database_name = f"{self.country_short}_{self.make}_loops_db"
-                cnx = sqlite3.connect(database_name)
+                cnx = sqlite3.connect(os.path.join(GlobalSettings.temp_folder, database_name))
                 df = self.initial_dataframe[self.initial_dataframe.ss != '']
                 df.to_sql(name='dataframe', con=cnx)
 
@@ -75,7 +75,7 @@ class ProcessingFunctions:
                 self.initial_dataframe.sort_index(inplace=True)
 
                 cnx.close()
-                os.remove(database_name)
+                os.remove(os.path.join(GlobalSettings.temp_folder, database_name))
 
             except AttributeError as er:
                 message = "Loops cannot be identified since there is no SS column! Please check .ini file!"
@@ -99,7 +99,7 @@ class ProcessingFunctions:
                 logging.debug("Creating missing prices for SS")
                 import sqlite3
                 database_name = f"{self.country_short}_{self.make}_ssprices_db"
-                cnx = sqlite3.connect(database_name)
+                cnx = sqlite3.connect(os.path.join(GlobalSettings.temp_folder, database_name))
                 df = self.initial_dataframe.copy(deep=True)
                 df.to_sql(name='dataframe', con=cnx, index=False)
 
@@ -114,7 +114,7 @@ class ProcessingFunctions:
                     self.initial_dataframe.price = pd.to_numeric(self.initial_dataframe.price)
 
                 cnx.close()
-                os.remove(database_name)
+                os.remove(os.path.join(GlobalSettings.temp_folder, database_name))
 
         except DatabaseError as er:
             message = "Prices for SS cannot be created since there is no SS column! Please check .ini file!"

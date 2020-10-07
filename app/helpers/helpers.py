@@ -6,7 +6,6 @@ from dataclasses import dataclass
 import os
 import sqlite3
 from typing import Tuple
-
 import pandas as pd
 import typer
 from pandas import DataFrame, Series
@@ -22,6 +21,7 @@ class GlobalSettings:
     acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
     localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
     output_folder = config['GLOBAL_APP_SETTINGS']['output_folder']
+    temp_folder = config['GLOBAL_APP_SETTINGS']['temp_folder']
     str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
     str_part_ss = config['GLOBAL_APP_SETTINGS']['str_part_ss']
     str_price = config['GLOBAL_APP_SETTINGS']['str_price']
@@ -42,6 +42,14 @@ class MainProgramHelper:
 
         else:
             return True
+
+    @staticmethod
+    def remove_unused_db_files():
+        for root, subdirs, files in os.walk(GlobalSettings.temp_folder):
+            for file in files:
+                if file.endswith("_db"):
+                    os.remove(f"{root}\\{file}")
+                    logging.warning(f"Found unused DB Files. Removed!")
 
 
 class SaveTxtHelper:

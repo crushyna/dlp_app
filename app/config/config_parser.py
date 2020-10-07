@@ -2,9 +2,7 @@ import configparser
 import logging
 from configparser import DuplicateOptionError
 import os
-
 import typer
-
 from helpers.helpers import GlobalSettings
 
 

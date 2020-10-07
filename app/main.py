@@ -17,7 +17,6 @@ if GlobalSettings.return_console_messages == 0:
     def _disable_console_messages(*args, **kwargs):
         pass
 
-
     typer.echo = _disable_console_messages
 
 
@@ -45,7 +44,7 @@ def main(
     # check if files exits
     result = MainProgramHelper.check_if_files_exist(filename, settings_file)
     if result is True:
-
+        MainProgramHelper.remove_unused_db_files()
         typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
         logging.info(f"===> Starting file processing: {filename} with settings: {settings_file}")
 
@@ -86,7 +85,6 @@ def main(
 
         # TODO: this has to be moved somewhere else!
         if not hasattr(processed_file, 'save_raw'):
-
             for each_function in processing_list:
                 each_function()
 
