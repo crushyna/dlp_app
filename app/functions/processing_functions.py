@@ -27,6 +27,7 @@ class ProcessingFunctions:
                 # remove all duplicates
                 self.initial_dataframe = pd.concat([self.initial_dataframe, duplicates_dataframe]).drop_duplicates(
                     keep=False)
+
                 if self.prefer_higher_price == 1:
                     # add proper one
                     values_to_add = duplicates_dataframe.sort_values('price').drop_duplicates(subset='part_no',
@@ -51,8 +52,9 @@ class ProcessingFunctions:
         return self.initial_dataframe
 
     def drop_loops(self) -> object:
-        # TODO: works! but clean it!
         """
+        Function for dropping loops.
+        For specific information about this function, look into DataframeHelpers.clear_loops() function.
         iteritems and iterrows is too slow. Local temporary database is required.
         """
         if self.clear_loops == 1:
@@ -155,11 +157,11 @@ class ProcessingFunctions:
 
         return self.initial_dataframe
 
-    def drop_na_partno(self):
+    def drop_na_partno(self) -> object:
         # TODO: barely happens, but nice to have
         """
         Drop row when part_no is empty.
-        :return:
+        :return: object
         """
         pass
 
@@ -181,14 +183,11 @@ class ProcessingFunctions:
         # get current timestamp
         current_timestamp = datetime.now().strftime('%d%m%y')
 
-        # TODO: add trigger for this
-        '''
         logging.debug("Removing unwanted characters")
-        output_dataframe.part_no = output_dataframe.part_no.str.replace("-", "")
-        output_dataframe.ss = output_dataframe.ss.str.replace("-", "")
-        '''
+        if self.clear_characters == 1:
+            output_dataframe = SaveTxtHelper.remove_unwanted_characters(output_dataframe, self.characters_to_remove)
 
-        # TODO: add trigger for this, but also needs to be implemented somewhere else
+        # TODO: add this for Land Rover and Jaguar. Maybe in pre-processing?
         '''
         logging.debug("Removing unwanted characters")
         output_dataframe.ss = output_dataframe.ss.str.replace("O", "")
@@ -229,17 +228,17 @@ class ProcessingFunctions:
 
         # set columns to strings (just in case they aren't)
         output_dataframe.part_no = output_dataframe.part_no.astype(str)
-
         if self.alternative_parts == 1:
             output_dataframe.ss = output_dataframe.ss.astype(str)
 
-        # set filename
+        # set filename and save file
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
+
         try:
             np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt,
                        encoding='utf-8')
 
-        # TODO: this makes nightmares with Australia / FIAT / FAR
+        # TODO: this makes nightmares with Australia FIAT / FAR
         except TypeError as er:
             logging.warning(f"Error while writing .txt file! {er}. Please check output file!")
             typer.echo(f"Error while writing .txt file! {er}. Please check output file!")
@@ -249,11 +248,9 @@ class ProcessingFunctions:
         SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
                                      f'PriceL{current_timestamp}')
 
-        # TODO: add trigger for this
-        '''
-        logging.debug("Replacing decimal separator")
-        SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
-        '''
+        if self.set_comma_decimal_sep == 1:
+            logging.debug("Replacing decimal separator")
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
 
         if self.alternative_float_column == 1:
             logging.debug("Replacing '+' with empty character")

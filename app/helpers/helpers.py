@@ -122,6 +122,17 @@ class SaveTxtHelper:
 
         return filename
 
+    @staticmethod
+    def remove_unwanted_characters(dataframe: object, characters_to_remove: tuple):
+        for each_character in characters_to_remove:
+            if each_character in dataframe.part_no:
+                dataframe.part_no = dataframe.part_no.str.replace(each_character, "")
+
+            elif each_character in dataframe.ss:
+                dataframe.ss = dataframe.ss.str.replace(each_character, "")
+
+        return dataframe
+
 
 class DataframeHelpers:
     loop_query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
@@ -132,7 +143,15 @@ class DataframeHelpers:
 
     @staticmethod
     def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int) -> Tuple[DataFrame, DataFrame]:
+        # TODO: write description
+        """
+        Function for finding and clearing loops.
+        How does it work?
 
+        :param result_df:
+        :param loop_prefer_higher_price:
+        :return: Tuple[DataFrame, DataFrame
+        """
         # TODO: this may require some cleaning
         fixed_dataframe = pd.DataFrame(columns=result_df.columns)
         exclusion_dataframe = pd.DataFrame(columns=result_df.columns)

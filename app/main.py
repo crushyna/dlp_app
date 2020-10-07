@@ -96,7 +96,6 @@ def main(
             typer.echo(processed_file.initial_dataframe)
 
         typer.echo("Done!")
-        logging.info(f"===> {CustomPreProcessors.output_filename} file created.")
         logging.info(f"===> {filename} processing finished!")
 
     else:

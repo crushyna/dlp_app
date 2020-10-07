@@ -16,7 +16,7 @@ class CustomPreProcessors:
     """
     Custom pre-processing for selected input files.
     It MUST return dataframe object, ready to be processed by processing_functions
-    OR save file directly (when save_raw = 1).
+    OR function must save file directly (when save_raw = 1).
     """
 
     partno_list: List[str] = []
@@ -229,5 +229,3 @@ class CustomPreProcessors:
             f.write(header)
 
         return cls.output_filename
-
-
