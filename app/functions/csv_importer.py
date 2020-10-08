@@ -21,7 +21,8 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
         self.initial_dataframe = CustomPreProcessors.run_custom(self.country_name,
                                                                 self.make,
                                                                 self.filename,
-                                                                self.country_short) \
+                                                                self.country_short,
+                                                                self.column3_length) \
             if self.custom_settings == 1 else self.read_csv_file()
 
     def read_csv_file(self) -> DataFrame:
@@ -52,7 +53,15 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
         except ValueError as er:
             message = "Columns mismatch or wrong delimiter!"
             logging.critical(er)
-            logging.error(message)
+            logging.critical(message)
             typer.echo(message)
             raise typer.Exit()
+
+        except AttributeError as er_1:
+            message = "Attribute Error!"
+            logging.critical(er_1)
+            logging.critical(message)
+            typer.echo(message)
+            raise typer.Exit()
+
 

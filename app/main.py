@@ -7,7 +7,7 @@ from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 import os
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,

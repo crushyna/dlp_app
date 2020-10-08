@@ -30,7 +30,7 @@ class CustomPreProcessors:
     output_filename: str
 
     @staticmethod
-    def run_custom(country_name: str, make: str, filename: str, country_short: str) -> DataFrame or str:
+    def run_custom(country_name: str, make: str, filename: str, country_short: str, column_length: int) -> DataFrame or str:
         """
         Select custom process based on country name and car manufacturer.
         """
@@ -44,6 +44,12 @@ class CustomPreProcessors:
 
         elif country_name == "Ireland" and make == "Fiat":
             return CustomPreProcessors.ireland_fiat(filename)
+
+        elif country_name == "Ireland" and make == "MGRover":
+            return CustomPreProcessors.ireland_mgrover(filename, country_short, make)
+        
+        elif country_name == "Ireland" and make == "Mazda":
+            return CustomPreProcessors.ireland_mazda(filename)
 
         elif country_name == "Australia" and make == "Porsche":
             return CustomPreProcessors.australia_porsche(filename)
@@ -229,3 +235,45 @@ class CustomPreProcessors:
             f.write(header)
 
         return cls.output_filename
+
+    @classmethod
+    def ireland_mgrover(cls, filename: str, country_short: str, make: str) -> str:
+        from numpy import nan, savetxt
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), dtype=str)
+        dataframe = dataframe[['Part Number', 'Description', 'Standard Pric', 'Disc Code', 'Surcharge', 'VAT Co', 'UOI', 'Superseded By']]
+
+        fmt = f"%-18s%-41s%+7s%-10s%+6s%+8s%+8s%-18s"
+        header = "Part Number       Description                             StandardDisc CodSurcharg VAT Co     UOI Superseded By"
+
+        dataframe.Surcharge = dataframe.Surcharge.replace(nan, '0.00', regex=True)
+        dataframe["Superseded By"] = dataframe["Superseded By"].replace(nan, '', regex=True)
+
+        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
+
+        with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header)
+
+        return cls.output_filename
+
+    @classmethod
+    def ireland_mazda(cls, filename) -> DataFrame:
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
+            for _ in range(1):
+                next(infile)
+            for each_line in infile:
+                next_price = re.search("\s[-+]?([0-9]*\.[0-9]+|[0-9]+\s)", each_line)
+                next_part_no = each_line.replace(next_price[1], '').strip()
+
+                cls.price_list.append(next_price[1])
+                cls.partno_list.append(next_part_no)
+
+        cls.partno_series = pd.Series(cls.partno_list).astype(str)
+        cls.price_series = pd.Series(cls.price_list).astype(float)
+
+        dataframe = pd.DataFrame({"part_no": cls.partno_series, "price": cls.price_series})
+
+        return dataframe

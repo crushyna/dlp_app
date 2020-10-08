@@ -82,16 +82,28 @@ class SaveTxtHelper:
                     logging.debug("Setting file formatting where prices are floats")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
-                    if alternative_float_column != 1:
+                    if alternative_float_column == 0:
                         fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
                               f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%{column3_length}.{decimal_places}f"
 
                         # TODO: this might need some fixing!
-                    else:
+                    elif alternative_float_column == 1:
                         fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
                               f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%-{column3_length}.{decimal_places}f"
+
+                    # FOR IR_ROVER, but does not really work as expected
+                    elif alternative_float_column == 2:
+                        fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                              f"%{column2_length}.{decimal_places}f" \
+                              f"%+{column3_start - (column2_start + column2_length) + column3_length}s"
+
+                    else:
+                        message = "Unknown value of 'alternative_float_column'! Aborting!"
+                        logging.critical(message)
+                        typer.echo(message)
+                        raise typer.Exit()
 
             else:
                 logging.debug("Setting file formatting for alternative_parts == 0")

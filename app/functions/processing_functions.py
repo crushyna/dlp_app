@@ -183,8 +183,8 @@ class ProcessingFunctions:
         # get current timestamp
         current_timestamp = datetime.now().strftime('%d%m%y')
 
-        logging.debug("Removing unwanted characters")
         if self.clear_characters == 1:
+            logging.debug("Removing unwanted characters")
             output_dataframe = SaveTxtHelper.remove_unwanted_characters(output_dataframe, self.characters_to_remove)
 
         # TODO: add this for Land Rover and Jaguar. Maybe in pre-processing?
@@ -194,7 +194,7 @@ class ProcessingFunctions:
         '''
 
         if self.force_price_as_string == 0:
-            output_dataframe[GlobalSettings.str_price] = output_dataframe[GlobalSettings.str_price].round(
+            output_dataframe.price = output_dataframe.price.round(
                 self.decimal_places)
         else:
             logging.warning(f"Prices will be saved as strings (FORCED).")
@@ -252,7 +252,7 @@ class ProcessingFunctions:
             logging.debug("Replacing decimal separator")
             SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
 
-        if self.alternative_float_column == 1:
+        if self.alternative_float_column != 0:
             logging.debug("Replacing '+' with empty character")
             SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), "+", " ")
 
