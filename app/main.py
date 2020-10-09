@@ -7,7 +7,7 @@ from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 import os
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -36,10 +36,8 @@ def main(
         )
 ):
     """
-    Entry point for application!
-    :param filename:
-    :param settings_file:
-    :param version
+    Entry point for application! Provide input filename and settings filename in order to proceed.
+    Made by: Radosław Malinowski (https://github.com/crushyna)
     """
     # check if files exits
     result = MainProgramHelper.check_if_files_exist(filename, settings_file)
