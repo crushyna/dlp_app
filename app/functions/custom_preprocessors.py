@@ -39,7 +39,8 @@ class CustomPreProcessors:
         if country_name == "Ireland" and make == "Ford":
             return CustomPreProcessors.ireland_ford(filename)
 
-        elif country_name == "Ireland" and make == "BMW":
+        elif country_name == "Ireland" and make == "BMW"\
+                or country_name == "United Kingdom" and make == "BMW":
             return CustomPreProcessors.ireland_bmw(filename, country_short, make)
 
         elif country_name == "Ireland" and make == "Fiat":
@@ -65,6 +66,15 @@ class CustomPreProcessors:
 
         elif country_name == "Australia" and make == "TeslaSS":
             return CustomPreProcessors.australia_tesla_ss(filename, country_short, make)
+
+        elif country_name == "Bahrain" and make == "Toyota":
+            return CustomPreProcessors.bahrain_toyota(filename)
+        
+        elif country_name == "United Kingdom" and make == "PSA":
+            return CustomPreProcessors.unitedkingdom_psa(filename)
+
+        elif country_name == "United Kingdom" and make == "Renault":
+            return CustomPreProcessors.unitedkingdom_renault(filename)
 
         else:
             message = "Custom pre-processing settings not found!"
@@ -275,5 +285,67 @@ class CustomPreProcessors:
         cls.price_series = pd.Series(cls.price_list).astype(float)
 
         dataframe = pd.DataFrame({"part_no": cls.partno_series, "price": cls.price_series})
+
+        return dataframe
+
+    @classmethod
+    def bahrain_toyota(cls, filename) -> DataFrame:
+        string1 = '"'
+        replacement1 = '*'
+        string2 = '*,*'
+        replacement2 = '$ '
+        string3 = '*,'
+        replacement3 = '$ '
+        string4 = '*'
+        replacement4 = ''
+
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
+            filedata = file.read()
+
+        # Replace the target string
+        filedata = filedata.replace(string1, replacement1)
+        filedata = filedata.replace(string2, replacement2)
+        filedata = filedata.replace(string3, replacement3)
+        filedata = filedata.replace(string4, replacement4)
+
+        # Write the file out again
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
+            file.write(filedata)
+
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), delimiter='$', usecols=(0, 2))
+        dataframe.columns = ('part_no', 'price')
+        dataframe.price = pd.to_numeric(dataframe.price)
+
+        return dataframe
+
+    @classmethod
+    def unitedkingdom_psa(cls, filename):
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
+            for each_line in infile:
+                cls.partno_list.append(each_line[34:44])
+                cls.price_list.append(each_line[103:110])
+                cls.ss_list.append(each_line[118:128])
+
+        cls.partno_series = pd.Series(cls.partno_list).astype(str)
+        cls.ss_series = pd.Series(cls.ss_list).astype(str)
+        cls.price_series = pd.Series(cls.price_list).astype(float) / 100
+
+        dataframe = pd.DataFrame({"part_no": cls.partno_series, "ss": cls.ss_series, "price": cls.price_series})
+
+        return dataframe
+
+    @classmethod
+    def unitedkingdom_renault(cls, filename):
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
+            for each_line in infile:
+                cls.partno_list.append(each_line[0:10])
+                cls.price_list.append(each_line[33:40])
+                cls.ss_list.append(each_line[57:67])
+
+        cls.partno_series = pd.Series(cls.partno_list).astype(str)
+        cls.ss_series = pd.Series(cls.ss_list).astype(str)
+        cls.price_series = pd.Series(cls.price_list).astype(float) / 100
+
+        dataframe = pd.DataFrame({"part_no": cls.partno_series, "ss": cls.ss_series, "price": cls.price_series})
 
         return dataframe

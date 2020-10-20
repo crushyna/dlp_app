@@ -177,6 +177,8 @@ class ProcessingFunctions:
         return self.initial_dataframe
 
     def save_to_fwf_txt(self) -> str:
+        global update_timestamp_mark
+        update_timestamp_mark = False
         logging.debug(f"Saving dataframe to FWF text file")
         output_dataframe = self.initial_dataframe
 
@@ -201,16 +203,18 @@ class ProcessingFunctions:
             typer.echo(f"Prices will be saved as strings (FORCED).")
 
         # add timestamp mark
-        if self.alternative_parts == 1:
-            logging.debug("Setting timestamp for alternative_parts == 1")
-            output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
+        if self.add_timestamp_mark == 1:
+            update_timestamp_mark = True
+            if self.alternative_parts == 1:
+                logging.debug("Setting timestamp for alternative_parts == 1")
+                output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
 
-        else:
-            logging.debug("Setting timestamp for alternative_parts == 0")
-            output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
+            else:
+                logging.debug("Setting timestamp for alternative_parts == 0")
+                output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
 
-        output_dataframe.index = output_dataframe.index + 1  # shift index
-        output_dataframe.sort_index(inplace=True)  # sort index
+            output_dataframe.index = output_dataframe.index + 1  # shift index
+            output_dataframe.sort_index(inplace=True)  # sort index
 
         # check formatting
         output_dataframe, fmt = SaveTxtHelper.set_file_formatting(self.alternative_parts, self.force_price_as_string,
@@ -244,9 +248,10 @@ class ProcessingFunctions:
             typer.echo(f"Error while writing .txt file! {er}. Please check output file!")
 
         # Replace strings in .txt file
-        logging.debug("Adding price list title")
-        SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
-                                     f'PriceL{current_timestamp}')
+        if update_timestamp_mark:
+            logging.debug("Adding price list title")
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
+                                         f'PriceL{current_timestamp}')
 
         if self.set_comma_decimal_sep == 1:
             logging.debug("Replacing decimal separator")

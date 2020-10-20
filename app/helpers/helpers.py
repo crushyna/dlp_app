@@ -49,7 +49,7 @@ class MainProgramHelper:
             for file in files:
                 if file.endswith("_db"):
                     os.remove(f"{root}\\{file}")
-                    logging.warning(f"Found unused DB Files. Removed!")
+                    logging.warning(f"Found unused DB Files ({file}). Removed!")
 
 
 class SaveTxtHelper:
