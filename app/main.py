@@ -91,6 +91,9 @@ def main(
             logging.info(f"===> {output_filename} file created.")
             typer.echo(processed_file.initial_dataframe)
 
+        else:
+            pass
+
         typer.echo("Done!")
         logging.info(f"===> {filename} processing finished!")
 

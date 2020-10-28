@@ -52,6 +52,9 @@ class CustomPreProcessors:
         elif country_name == "Ireland" and make == "Mazda":
             return CustomPreProcessors.ireland_mazda(filename)
 
+        elif country_name == "Ireland" and make == "Mitsubishi":
+            return CustomPreProcessors.ireland_mitsubishi(filename)
+
         elif country_name == "Australia" and make == "Porsche":
             return CustomPreProcessors.australia_porsche(filename)
 
@@ -260,8 +263,10 @@ class CustomPreProcessors:
         dataframe.Surcharge = dataframe.Surcharge.replace(nan, '0.00', regex=True)
         dataframe["Superseded By"] = dataframe["Superseded By"].replace(nan, '', regex=True)
 
+        typer.echo("Saving file:")
         savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
 
+        typer.echo("Changing header:")
         with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
             content = f.read()
             f.seek(0, 0)
@@ -349,3 +354,20 @@ class CustomPreProcessors:
         dataframe = pd.DataFrame({"part_no": cls.partno_series, "ss": cls.ss_series, "price": cls.price_series})
 
         return dataframe
+
+    @classmethod
+    def ireland_mitsubishi(cls, filename):
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
+            for each_line in infile:
+                cls.partno_list.append(each_line[4:18])
+                cls.price_list.append(each_line[52:60])
+
+        partno_series = pd.Series(cls.partno_list).astype(str)
+        price_series = pd.Series(cls.price_list)
+
+        dataframe = pd.DataFrame({"part_no": partno_series, "price": price_series})
+        nan_value = float("NaN")
+        dataframe.replace("", nan_value, inplace=True)
+        dataframe2 = dataframe.dropna(subset=["price"])
+
+        return dataframe2

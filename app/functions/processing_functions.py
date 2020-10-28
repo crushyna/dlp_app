@@ -184,56 +184,60 @@ class ProcessingFunctions:
 
         # get current timestamp
         current_timestamp = datetime.now().strftime('%d%m%y')
+        try:
+            if self.clear_characters == 1:
+                logging.debug("Removing unwanted characters")
+                output_dataframe = SaveTxtHelper.remove_unwanted_characters(output_dataframe, self.characters_to_remove)
 
-        if self.clear_characters == 1:
+            # TODO: add this for Land Rover and Jaguar. Maybe in pre-processing?
+            '''
             logging.debug("Removing unwanted characters")
-            output_dataframe = SaveTxtHelper.remove_unwanted_characters(output_dataframe, self.characters_to_remove)
+            output_dataframe.ss = output_dataframe.ss.str.replace("O", "")
+            '''
 
-        # TODO: add this for Land Rover and Jaguar. Maybe in pre-processing?
-        '''
-        logging.debug("Removing unwanted characters")
-        output_dataframe.ss = output_dataframe.ss.str.replace("O", "")
-        '''
-
-        if self.force_price_as_string == 0:
-            output_dataframe.price = output_dataframe.price.round(
-                self.decimal_places)
-        else:
-            logging.warning(f"Prices will be saved as strings (FORCED).")
-            typer.echo(f"Prices will be saved as strings (FORCED).")
-
-        # add timestamp mark
-        if self.add_timestamp_mark == 1:
-            update_timestamp_mark = True
-            if self.alternative_parts == 1:
-                logging.debug("Setting timestamp for alternative_parts == 1")
-                output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
-
+            if self.force_price_as_string == 0:
+                output_dataframe.price = output_dataframe.price.round(
+                    self.decimal_places)
             else:
-                logging.debug("Setting timestamp for alternative_parts == 0")
-                output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
+                logging.warning(f"Prices will be saved as strings (FORCED).")
+                typer.echo(f"Prices will be saved as strings (FORCED).")
 
-            output_dataframe.index = output_dataframe.index + 1  # shift index
-            output_dataframe.sort_index(inplace=True)  # sort index
+            # add timestamp mark
+            if self.add_timestamp_mark == 1:
+                update_timestamp_mark = True
+                if self.alternative_parts == 1:
+                    logging.debug("Setting timestamp for alternative_parts == 1")
+                    output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
 
-        # check formatting
-        output_dataframe, fmt = SaveTxtHelper.set_file_formatting(self.alternative_parts, self.force_price_as_string,
-                                                                  output_dataframe,
-                                                                  self.columns_output_names, self.column1_start,
-                                                                  self.column1_length,
-                                                                  self.column2_start, self.column2_length,
-                                                                  self.column3_start,
-                                                                  self.column3_length, self.decimal_places,
-                                                                  self.alternative_float_column)
+                else:
+                    logging.debug("Setting timestamp for alternative_parts == 0")
+                    output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
 
-        # clear whole dataframe from NAN's
-        logging.debug("Clearing NaNs")
-        output_dataframe = output_dataframe.fillna('')
+                output_dataframe.index = output_dataframe.index + 1  # shift index
+                output_dataframe.sort_index(inplace=True)  # sort index
 
-        # set columns to strings (just in case they aren't)
-        output_dataframe.part_no = output_dataframe.part_no.astype(str)
-        if self.alternative_parts == 1:
-            output_dataframe.ss = output_dataframe.ss.astype(str)
+            # check formatting
+            output_dataframe, fmt = SaveTxtHelper.set_file_formatting(self.alternative_parts, self.force_price_as_string,
+                                                                      output_dataframe,
+                                                                      self.columns_output_names, self.column1_start,
+                                                                      self.column1_length,
+                                                                      self.column2_start, self.column2_length,
+                                                                      self.column3_start,
+                                                                      self.column3_length, self.decimal_places,
+                                                                      self.alternative_float_column)
+
+            # clear whole dataframe from NAN's
+            logging.debug("Clearing NaNs")
+            output_dataframe = output_dataframe.fillna('')
+
+            # set columns to strings (just in case they aren't)
+            output_dataframe.part_no = output_dataframe.part_no.astype(str)
+            if self.alternative_parts == 1:
+                output_dataframe.ss = output_dataframe.ss.astype(str)
+
+        except Exception as er:
+            logging.critical(f"Critical error! {er}")
+            typer.echo(f"Critical error! {er}")
 
         # set filename and save file
         filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
