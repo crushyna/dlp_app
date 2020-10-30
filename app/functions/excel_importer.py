@@ -7,6 +7,7 @@ import pyxlsb
 from pandas import DataFrame
 
 from config.config_parser import LocalizationProcessingSettings
+from functions.custom_preprocessors import CustomPreProcessors
 from functions.processing_functions import ProcessingFunctions
 from helpers.helpers import GlobalSettings
 
@@ -19,7 +20,12 @@ class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions)
         self.settings_file = settings_file
         self.engine = None if engine is None else engine
 
-        self.initial_dataframe = self.read_excel_file()
+        self.initial_dataframe = CustomPreProcessors.run_custom(self.country_name,
+                                                                self.make,
+                                                                self.filename,
+                                                                self.country_short,
+                                                                self.column3_length) \
+            if self.custom_settings == 1 else self.read_csv_file()
 
     def read_excel_file(self) -> DataFrame:
         try:

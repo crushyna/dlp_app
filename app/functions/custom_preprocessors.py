@@ -54,6 +54,12 @@ class CustomPreProcessors:
 
         elif country_name == "Ireland" and make == "Mitsubishi":
             return CustomPreProcessors.ireland_mitsubishi(filename)
+        
+        elif country_name == "Ireland" and make == "Tesla":
+            return CustomPreProcessors.ireland_tesla(filename, country_short)
+
+        elif country_name == "Ireland" and make == "TeslaSS":
+            return CustomPreProcessors.ireland_tesla_ss(filename, country_short, make)
 
         elif country_name == "Australia" and make == "Porsche":
             return CustomPreProcessors.australia_porsche(filename)
@@ -65,7 +71,7 @@ class CustomPreProcessors:
             return CustomPreProcessors.australia_kia(filename)
 
         elif country_name == "Australia" and make == "Tesla":
-            return CustomPreProcessors.australia_tesla(filename)
+            return CustomPreProcessors.australia_tesla(filename, country_short)
 
         elif country_name == "Australia" and make == "TeslaSS":
             return CustomPreProcessors.australia_tesla_ss(filename, country_short, make)
@@ -215,9 +221,9 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def australia_tesla(cls, filename: str) -> DataFrame:
+    def australia_tesla(cls, filename: str, country_short: str) -> DataFrame:
         dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), names=['part_no', 'price', 'currency', 'ss'], header=0)
-        dataframe = dataframe[['part_no', 'ss', 'price']][dataframe.ss == 'AU']
+        dataframe = dataframe[['part_no', 'ss', 'price']][dataframe.ss == country_short]
 
         dataframe.part_no = dataframe.part_no.str.replace("-", "")
         dataframe.part_no = dataframe.part_no.astype(str)
@@ -251,22 +257,23 @@ class CustomPreProcessors:
 
     @classmethod
     def ireland_mgrover(cls, filename: str, country_short: str, make: str) -> str:
+        #TODO: needs total export from .xlsx file into .txt. NOT JUST WRITING CONVERSION!
         from numpy import nan, savetxt
         current_timestamp = datetime.now().strftime('%d%m%y')
         cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
-        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), dtype=str)
+        dataframe = pd.read_excel(os.path.join(GlobalSettings.acquisiton_folder, filename), dtype=str)
         dataframe = dataframe[['Part Number', 'Description', 'Standard Pric', 'Disc Code', 'Surcharge', 'VAT Co', 'UOI', 'Superseded By']]
 
         fmt = f"%-18s%-41s%+7s%-10s%+6s%+8s%+8s%-18s"
         header = "Part Number       Description                             StandardDisc CodSurcharg VAT Co     UOI Superseded By"
 
         dataframe.Surcharge = dataframe.Surcharge.replace(nan, '0.00', regex=True)
+        dataframe["Standard Pric"] = pd.to_numeric(dataframe["Standard Pric"])
+        dataframe["Standard Pric"] = dataframe["Standard Pric"].round(2)
         dataframe["Superseded By"] = dataframe["Superseded By"].replace(nan, '', regex=True)
 
-        typer.echo("Saving file:")
         savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
 
-        typer.echo("Changing header:")
         with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
             content = f.read()
             f.seek(0, 0)
@@ -371,3 +378,40 @@ class CustomPreProcessors:
         dataframe2 = dataframe.dropna(subset=["price"])
 
         return dataframe2
+
+    @classmethod
+    def ireland_tesla(cls, filename: str, country_short: str) -> DataFrame:
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename),
+                                names=['part_no', 'price', 'currency', 'ss'], header=0)
+        dataframe = dataframe[['part_no', 'ss', 'price']][dataframe.ss == country_short]
+
+        dataframe.part_no = dataframe.part_no.str.replace("-", "")
+        dataframe.part_no = dataframe.part_no.astype(str)
+        dataframe.ss = dataframe.ss.astype(str)
+        dataframe.price = dataframe.price.astype(float)
+
+        return dataframe
+
+    @classmethod
+    def ireland_tesla_ss(cls, filename, country_short, make) -> str:
+        from numpy import savetxt
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename))
+
+        dataframe.OldPart = dataframe.OldPart.str.replace("-", "")
+        dataframe.NewPart = dataframe.NewPart.str.replace("-", "")
+
+        fmt = f"%-13s%-13s%-8s%+15s"
+        header = "OldPart      NewPart      ServiceabilityModReason"
+
+        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt,
+                encoding='utf-8')
+
+        with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header)
+
+        return cls.output_filename
