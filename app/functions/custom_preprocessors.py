@@ -76,6 +76,9 @@ class CustomPreProcessors:
         elif country_name == "Australia" and make == "TeslaSS":
             return CustomPreProcessors.australia_tesla_ss(filename, country_short, make)
 
+        elif country_name == "Australia" and make == "Subaru":
+            return CustomPreProcessors.australia_subaru(filename)
+
         elif country_name == "Bahrain" and make == "Toyota":
             return CustomPreProcessors.bahrain_toyota(filename)
         
@@ -331,7 +334,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def unitedkingdom_psa(cls, filename):
+    def unitedkingdom_psa(cls, filename) -> DataFrame:
         with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
             for each_line in infile:
                 cls.partno_list.append(each_line[34:44])
@@ -347,7 +350,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def unitedkingdom_renault(cls, filename):
+    def unitedkingdom_renault(cls, filename) -> DataFrame:
         with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
             for each_line in infile:
                 cls.partno_list.append(each_line[0:10])
@@ -363,7 +366,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def ireland_mitsubishi(cls, filename):
+    def ireland_mitsubishi(cls, filename) -> DataFrame:
         with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as infile:
             for each_line in infile:
                 cls.partno_list.append(each_line[4:18])
@@ -415,3 +418,18 @@ class CustomPreProcessors:
             f.write(header)
 
         return cls.output_filename
+
+    @classmethod
+    def australia_subaru(cls, filename) -> DataFrame:
+        import numpy as np
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename),
+                                dtype=str, delimiter='\t', encoding='cp1252',
+                                usecols=['Material', 'Supersession', 'List price'])
+        dataframe = dataframe.replace(np.nan, '', regex=True)
+        dataframe = dataframe.rename(columns={'Material': 'part_no', 'Supersession': 'ss', 'List price': 'price'})
+
+        dataframe.price = pd.to_numeric(dataframe.price)
+        dataframe.part_no = dataframe.part_no.astype(str)
+        dataframe.ss = dataframe.ss.astype(str)
+
+        return dataframe

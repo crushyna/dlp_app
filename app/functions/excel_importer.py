@@ -8,11 +8,12 @@ from pandas import DataFrame
 
 from config.config_parser import LocalizationProcessingSettings
 from functions.custom_preprocessors import CustomPreProcessors
+from functions.post_processing import PostProcessingFunctions
 from functions.processing_functions import ProcessingFunctions
 from helpers.helpers import GlobalSettings
 
 
-class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
+class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, PostProcessingFunctions):
 
     def __init__(self, filename: str, settings_file: str, engine: str):
         super().__init__(settings_file)

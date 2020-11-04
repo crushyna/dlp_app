@@ -6,11 +6,12 @@ from pandas import DataFrame
 
 from config.config_parser import LocalizationProcessingSettings
 from functions.custom_preprocessors import CustomPreProcessors
+from functions.post_processing import PostProcessingFunctions
 from functions.processing_functions import ProcessingFunctions
 from helpers.helpers import GlobalSettings
 
 
-class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
+class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, PostProcessingFunctions):
 
     def __init__(self, filename: str, settings_file: str, engine=None):
         super().__init__(settings_file)

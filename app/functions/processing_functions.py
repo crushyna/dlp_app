@@ -1,4 +1,3 @@
-import re
 import sys
 from datetime import datetime
 import numpy as np
@@ -15,6 +14,8 @@ class ProcessingFunctions:
     initial_dataframe: object
 
     # TODO: deleting symbols like ,.[]\-= from part number
+
+    current_timestamp: str = datetime.now().strftime('%d%m%y')
 
     def drop_duplicates(self) -> object:
         if self.part_number_duplicates == 1:
@@ -182,8 +183,6 @@ class ProcessingFunctions:
         logging.debug(f"Saving dataframe to FWF text file")
         output_dataframe = self.initial_dataframe
 
-        # get current timestamp
-        current_timestamp = datetime.now().strftime('%d%m%y')
         try:
             if self.clear_characters == 1:
                 logging.debug("Removing unwanted characters")
@@ -207,11 +206,11 @@ class ProcessingFunctions:
                 update_timestamp_mark = True
                 if self.alternative_parts == 1:
                     logging.debug("Setting timestamp for alternative_parts == 1")
-                    output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99, '']  # add timestamp mark
+                    output_dataframe.loc[-1] = [f'$$$$$${ProcessingFunctions.current_timestamp}', 9.99, '']  # add timestamp mark
 
                 else:
                     logging.debug("Setting timestamp for alternative_parts == 0")
-                    output_dataframe.loc[-1] = [f'$$$$$${current_timestamp}', 9.99]  # add timestamp mark
+                    output_dataframe.loc[-1] = [f'$$$$$${ProcessingFunctions.current_timestamp}', 9.99]  # add timestamp mark
 
                 output_dataframe.index = output_dataframe.index + 1  # shift index
                 output_dataframe.sort_index(inplace=True)  # sort index
@@ -240,7 +239,7 @@ class ProcessingFunctions:
             typer.echo(f"Critical error! {er}")
 
         # set filename and save file
-        filename = f"{self.country_short}_{self.make}_{current_timestamp}.txt"
+        filename = f"{self.country_short}_{self.make}_{ProcessingFunctions.current_timestamp}.txt"
 
         try:
             np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt,
@@ -254,8 +253,9 @@ class ProcessingFunctions:
         # Replace strings in .txt file
         if update_timestamp_mark:
             logging.debug("Adding price list title")
-            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), f'$$$$$${current_timestamp}',
-                                         f'PriceL{current_timestamp}')
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename),
+                                         f'$$$$$${ProcessingFunctions.current_timestamp}',
+                                         f'PriceL{ProcessingFunctions.current_timestamp}')
 
         if self.set_comma_decimal_sep == 1:
             logging.debug("Replacing decimal separator")

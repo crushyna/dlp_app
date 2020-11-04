@@ -82,7 +82,20 @@ def main(
                            processed_file.drop_duplicates]
 
         # TODO: this has to be moved somewhere else!
-        if not hasattr(processed_file, 'save_raw'):
+        if hasattr(processed_file, 'save_raw'):
+            if not processed_file.save_raw == 1:
+                for each_function in processing_list:
+                    each_function()
+
+                typer.echo("Saving fixed-width file...")
+                output_filename = processed_file.save_to_fwf_txt()
+                logging.info(f"===> {output_filename} file created.")
+                typer.echo(processed_file.initial_dataframe)
+
+            else:
+                pass
+
+        else:
             for each_function in processing_list:
                 each_function()
 
@@ -90,9 +103,6 @@ def main(
             output_filename = processed_file.save_to_fwf_txt()
             logging.info(f"===> {output_filename} file created.")
             typer.echo(processed_file.initial_dataframe)
-
-        else:
-            pass
 
         typer.echo("Done!")
         logging.info(f"===> {filename} processing finished!")
