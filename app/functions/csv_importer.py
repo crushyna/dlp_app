@@ -18,6 +18,7 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, P
         self.filename = filename
         self.settings_file = settings_file
         self.engine = None if engine is None else engine
+        self.output_filename: str
 
         self.initial_dataframe = CustomPreProcessors.run_custom(self.country_name,
                                                                 self.make,

@@ -12,6 +12,7 @@ import os
 
 class ProcessingFunctions:
     initial_dataframe: object
+    output_filename: str
 
     # TODO: deleting symbols like ,.[]\-= from part number
 
@@ -180,6 +181,7 @@ class ProcessingFunctions:
     def save_to_fwf_txt(self) -> str:
         global update_timestamp_mark
         update_timestamp_mark = False
+        typer.echo(f"Saving dataframe to FWF text file")
         logging.debug(f"Saving dataframe to FWF text file")
         output_dataframe = self.initial_dataframe
 
@@ -206,11 +208,11 @@ class ProcessingFunctions:
                 update_timestamp_mark = True
                 if self.alternative_parts == 1:
                     logging.debug("Setting timestamp for alternative_parts == 1")
-                    output_dataframe.loc[-1] = [f'$$$$$${ProcessingFunctions.current_timestamp}', 9.99, '']  # add timestamp mark
+                    output_dataframe.loc[-1] = [f'$$$$$${ProcessingFunctions.current_timestamp}', 9.99, '']
 
                 else:
                     logging.debug("Setting timestamp for alternative_parts == 0")
-                    output_dataframe.loc[-1] = [f'$$$$$${ProcessingFunctions.current_timestamp}', 9.99]  # add timestamp mark
+                    output_dataframe.loc[-1] = [f'$$$$$${ProcessingFunctions.current_timestamp}', 9.99]
 
                 output_dataframe.index = output_dataframe.index + 1  # shift index
                 output_dataframe.sort_index(inplace=True)  # sort index
@@ -239,10 +241,11 @@ class ProcessingFunctions:
             typer.echo(f"Critical error! {er}")
 
         # set filename and save file
-        filename = f"{self.country_short}_{self.make}_{ProcessingFunctions.current_timestamp}.txt"
+        self.output_filename = f"{self.country_short}_{self.make}_{ProcessingFunctions.current_timestamp}.txt"
 
         try:
-            np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, filename)), X=output_dataframe, fmt=fmt,
+            np.savetxt(fname=(os.path.join(GlobalSettings.output_folder, self.output_filename)),
+                       X=output_dataframe, fmt=fmt,
                        encoding='utf-8')
 
         # TODO: this makes nightmares with Australia FIAT / FAR
@@ -250,22 +253,8 @@ class ProcessingFunctions:
             logging.warning(f"Error while writing .txt file! {er}. Please check output file!")
             typer.echo(f"Error while writing .txt file! {er}. Please check output file!")
 
-        # Replace strings in .txt file
-        if update_timestamp_mark:
-            logging.debug("Adding price list title")
-            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename),
-                                         f'$$$$$${ProcessingFunctions.current_timestamp}',
-                                         f'PriceL{ProcessingFunctions.current_timestamp}')
-
-        if self.set_comma_decimal_sep == 1:
-            logging.debug("Replacing decimal separator")
-            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), ".", ",")
-
-        if self.alternative_float_column != 0:
-            logging.debug("Replacing '+' with empty character")
-            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, filename), "+", " ")
-
         # finish process
         logging.info("File saved successfully!")
+        logging.info(f"===> {self.output_filename} file created.")
 
-        return filename
+        return self.output_filename

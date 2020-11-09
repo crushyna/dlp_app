@@ -36,62 +36,68 @@ class CustomPreProcessors:
         """
         logging.info("File pre-processing triggered!")
         logging.info(f"Running pre-processing for {country_name} / {make}")
-        if country_name == "Ireland" and make == "Ford":
-            return CustomPreProcessors.ireland_ford(filename)
+        try:
+            if country_name == "Ireland" and make == "Ford":
+                return CustomPreProcessors.ireland_ford(filename)
 
-        elif country_name == "Ireland" and make == "BMW"\
-                or country_name == "United Kingdom" and make == "BMW":
-            return CustomPreProcessors.ireland_bmw(filename, country_short, make)
+            elif country_name == "Ireland" and make == "BMW"\
+                    or country_name == "United Kingdom" and make == "BMW":
+                return CustomPreProcessors.ireland_bmw(filename, country_short, make)
 
-        elif country_name == "Ireland" and make == "Fiat":
-            return CustomPreProcessors.ireland_fiat(filename)
+            elif country_name == "Ireland" and make == "Fiat":
+                return CustomPreProcessors.ireland_fiat(filename)
 
-        elif country_name == "Ireland" and make == "MGRover":
-            return CustomPreProcessors.ireland_mgrover(filename, country_short, make)
-        
-        elif country_name == "Ireland" and make == "Mazda":
-            return CustomPreProcessors.ireland_mazda(filename)
+            elif country_name == "Ireland" and make == "MGRover":
+                return CustomPreProcessors.ireland_mgrover(filename, country_short, make)
 
-        elif country_name == "Ireland" and make == "Mitsubishi":
-            return CustomPreProcessors.ireland_mitsubishi(filename)
-        
-        elif country_name == "Ireland" and make == "Tesla":
-            return CustomPreProcessors.ireland_tesla(filename, country_short)
+            elif country_name == "Ireland" and make == "Mazda":
+                return CustomPreProcessors.ireland_mazda(filename)
 
-        elif country_name == "Ireland" and make == "TeslaSS":
-            return CustomPreProcessors.ireland_tesla_ss(filename, country_short, make)
+            elif country_name == "Ireland" and make == "Mitsubishi":
+                return CustomPreProcessors.ireland_mitsubishi(filename)
 
-        elif country_name == "Australia" and make == "Porsche":
-            return CustomPreProcessors.australia_porsche(filename)
+            elif country_name == "Ireland" and make == "Tesla":
+                return CustomPreProcessors.ireland_tesla(filename, country_short)
 
-        elif country_name == "Australia" and make == "Toyota":
-            return CustomPreProcessors.australia_toyota(filename)
+            elif country_name == "Ireland" and make == "TeslaSS":
+                return CustomPreProcessors.ireland_tesla_ss(filename, country_short, make)
 
-        elif country_name == "Australia" and make == "KIA":
-            return CustomPreProcessors.australia_kia(filename)
+            elif country_name == "Australia" and make == "Porsche":
+                return CustomPreProcessors.australia_porsche(filename)
 
-        elif country_name == "Australia" and make == "Tesla":
-            return CustomPreProcessors.australia_tesla(filename, country_short)
+            elif country_name == "Australia" and make == "Toyota":
+                return CustomPreProcessors.australia_toyota(filename)
 
-        elif country_name == "Australia" and make == "TeslaSS":
-            return CustomPreProcessors.australia_tesla_ss(filename, country_short, make)
+            elif country_name == "Australia" and make == "KIA":
+                return CustomPreProcessors.australia_kia(filename)
 
-        elif country_name == "Australia" and make == "Subaru":
-            return CustomPreProcessors.australia_subaru(filename)
+            elif country_name == "Australia" and make == "Tesla":
+                return CustomPreProcessors.australia_tesla(filename, country_short)
 
-        elif country_name == "Bahrain" and make == "Toyota":
-            return CustomPreProcessors.bahrain_toyota(filename)
-        
-        elif country_name == "United Kingdom" and make == "PSA":
-            return CustomPreProcessors.unitedkingdom_psa(filename)
+            elif country_name == "Australia" and make == "TeslaSS":
+                return CustomPreProcessors.australia_tesla_ss(filename, country_short, make)
 
-        elif country_name == "United Kingdom" and make == "Renault":
-            return CustomPreProcessors.unitedkingdom_renault(filename)
+            elif country_name == "Australia" and make == "Subaru":
+                return CustomPreProcessors.australia_subaru(filename)
 
-        else:
-            message = "Custom pre-processing settings not found!"
-            logging.error(message)
-            typer.echo(message)
+            elif country_name == "Bahrain" and make == "Toyota":
+                return CustomPreProcessors.bahrain_toyota(filename)
+
+            elif country_name == "United Kingdom" and make == "PSA":
+                return CustomPreProcessors.unitedkingdom_psa(filename)
+
+            elif country_name == "United Kingdom" and make == "Renault":
+                return CustomPreProcessors.unitedkingdom_renault(filename)
+
+            else:
+                message = "Custom pre-processing settings not found!"
+                logging.error(message)
+                typer.echo(message)
+                raise typer.Exit()
+
+        except Exception as er:
+            logging.critical(er)
+            typer.echo(er)
             raise typer.Exit()
 
     @classmethod

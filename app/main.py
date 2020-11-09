@@ -1,13 +1,12 @@
 import typer
 import logging
 from typing import Optional
-from functions.custom_preprocessors import CustomPreProcessors
 from helpers.helpers import MainProgramHelper, GlobalSettings
 from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 import os
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -16,6 +15,7 @@ if GlobalSettings.use_logs == 1:
 if GlobalSettings.return_console_messages == 0:
     def _disable_console_messages(*args, **kwargs):
         pass
+
 
     typer.echo = _disable_console_messages
 
@@ -70,6 +70,7 @@ def main(
                 logging.critical(f"{filename} file type is not supported!")
                 raise typer.Exit()
 
+        # TODO: this has to be moved somewhere else!
         processing_list = [processed_file.drop_duplicates,
                            processed_file.drop_loops,
                            processed_file.create_prices_for_missing_ss,
@@ -81,28 +82,26 @@ def main(
                            processed_file.vat_setter,
                            processed_file.drop_duplicates]
 
-        # TODO: this has to be moved somewhere else!
-        if hasattr(processed_file, 'save_raw'):
-            if not processed_file.save_raw == 1:
+        if processed_file.save_raw == 1:
+            pass
+
+        else:
+            try:
                 for each_function in processing_list:
                     each_function()
 
-                typer.echo("Saving fixed-width file...")
-                output_filename = processed_file.save_to_fwf_txt()
-                logging.info(f"===> {output_filename} file created.")
-                typer.echo(processed_file.initial_dataframe)
+            except Exception as er:
+                typer.echo(er)
+                logging.critical(er)
+                raise typer.Exit()
 
-            else:
-                pass
-
-        else:
-            for each_function in processing_list:
-                each_function()
-
-            typer.echo("Saving fixed-width file...")
             output_filename = processed_file.save_to_fwf_txt()
-            logging.info(f"===> {output_filename} file created.")
             typer.echo(processed_file.initial_dataframe)
+            typer.echo("Starting post-processing")
+            logging.info("Starting post-processing")
+            processed_file.post_update_timestamp_mark()
+            processed_file.post_set_comma_decimal_sep()
+            processed_file.post_alternative_float_column()
 
         typer.echo("Done!")
         logging.info(f"===> {filename} processing finished!")
