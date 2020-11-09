@@ -5,6 +5,7 @@ import sys
 from dataclasses import dataclass
 import os
 import sqlite3
+from typing import Tuple
 import pandas as pd
 import typer
 from pandas import DataFrame, Series
@@ -20,6 +21,7 @@ class GlobalSettings:
     acquisiton_folder = config['GLOBAL_APP_SETTINGS']['acquisiton_folder']
     localization_folder = config['GLOBAL_APP_SETTINGS']['localization_folder']
     output_folder = config['GLOBAL_APP_SETTINGS']['output_folder']
+    temp_folder = config['GLOBAL_APP_SETTINGS']['temp_folder']
     str_part_no = config['GLOBAL_APP_SETTINGS']['str_part_no']
     str_part_ss = config['GLOBAL_APP_SETTINGS']['str_part_ss']
     str_price = config['GLOBAL_APP_SETTINGS']['str_price']
@@ -31,7 +33,7 @@ class GlobalSettings:
 class MainProgramHelper:
 
     @staticmethod
-    def check_if_files_exist(filename: str, settings_file: str):
+    def check_if_files_exist(filename: str, settings_file: str) -> str or bool:
         if not os.path.isfile(os.path.join(GlobalSettings.acquisiton_folder, filename)):
             return f"File {filename} does not exist!"
 
@@ -40,6 +42,14 @@ class MainProgramHelper:
 
         else:
             return True
+
+    @staticmethod
+    def remove_unused_db_files():
+        for root, subdirs, files in os.walk(GlobalSettings.temp_folder):
+            for file in files:
+                if file.endswith("_db"):
+                    os.remove(f"{root}\\{file}")
+                    logging.warning(f"Found unused DB Files ({file}). Removed!")
 
 
 class SaveTxtHelper:
@@ -56,7 +66,7 @@ class SaveTxtHelper:
                             column3_start: int,
                             column3_length: int,
                             decimal_places: int,
-                            alternative_float_column: int):
+                            alternative_float_column: int) -> (DataFrame, str):
         try:
             if alternative_parts == 1:
                 logging.debug("Setting file formatting for alternative_parts == 1")
@@ -72,16 +82,28 @@ class SaveTxtHelper:
                     logging.debug("Setting file formatting where prices are floats")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
-                    if alternative_float_column != 1:
+                    if alternative_float_column == 0:
                         fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
                               f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%{column3_length}.{decimal_places}f"
 
                         # TODO: this might need some fixing!
-                    else:
+                    elif alternative_float_column == 1:
                         fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
                               f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%-{column3_length}.{decimal_places}f"
+
+                    # FOR IR_ROVER, but does not really work as expected
+                    elif alternative_float_column == 2:
+                        fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
+                              f"%{column2_length}.{decimal_places}f" \
+                              f"%+{column3_start - (column2_start + column2_length) + column3_length}s"
+
+                    else:
+                        message = "Unknown value of 'alternative_float_column'! Aborting!"
+                        logging.critical(message)
+                        typer.echo(message)
+                        raise typer.Exit()
 
             else:
                 logging.debug("Setting file formatting for alternative_parts == 0")
@@ -90,14 +112,14 @@ class SaveTxtHelper:
                     output_dataframe = dataframe[
                         list(columns_output_names)]
                     fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
-                          f"%-{column2_length}s"
+                          f"%+{column2_length}s"
 
                 else:
                     logging.debug("Setting file formatting where prices are floats")
                     output_dataframe = dataframe[
                         list(columns_output_names)]
                     fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
-                          f"%-{column2_length}.{decimal_places}f"
+                          f"%+{column2_length}.{decimal_places}f"
 
             return output_dataframe, fmt
 
@@ -107,7 +129,7 @@ class SaveTxtHelper:
             sys.exit()
 
     @staticmethod
-    def replace_string(filename: str, string: str, replacement: str):
+    def replace_string(filename: str, string: str, replacement: str) -> str:
         with open(filename, 'r', encoding='utf8') as file:
             filedata = file.read()
 
@@ -120,6 +142,17 @@ class SaveTxtHelper:
 
         return filename
 
+    @staticmethod
+    def remove_unwanted_characters(dataframe: object, characters_to_remove: tuple):
+        for each_character in characters_to_remove:
+            if each_character in dataframe.part_no:
+                dataframe.part_no = dataframe.part_no.str.replace(each_character, "")
+
+            elif each_character in dataframe.ss:
+                dataframe.ss = dataframe.ss.str.replace(each_character, "")
+
+        return dataframe
+
 
 class DataframeHelpers:
     loop_query = """SELECT dataframe.part_no, dataframe.ss, dataframe.price FROM dataframe INNER JOIN dataframe AS 
@@ -129,9 +162,17 @@ class DataframeHelpers:
     dataframe.part_no FROM dataframe) AND dataframe.ss != ''"""
 
     @staticmethod
-    def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int):
+    def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int) -> Tuple[DataFrame, DataFrame]:
+        # TODO: write description
+        """
+        Function for finding and clearing loops.
+        How does it work?
 
-        # TODO: this may require some cleaning and logging implementation
+        :param result_df:
+        :param loop_prefer_higher_price:
+        :return: Tuple[DataFrame, DataFrame
+        """
+        # TODO: this may require some cleaning
         fixed_dataframe = pd.DataFrame(columns=result_df.columns)
         exclusion_dataframe = pd.DataFrame(columns=result_df.columns)
         for each_index, each_row in result_df.iterrows():
@@ -162,7 +203,12 @@ class DataframeHelpers:
         return exclusion_dataframe, fixed_dataframe
 
     @staticmethod
-    def check_if_series_contain_special_chars(prices: Series):
+    def check_if_series_contain_special_chars(prices: Series) -> bool:
+        """
+        currently not used
+        :param prices:
+        :return: bool
+        """
         string_check = re.compile('[@_!#$%^&*()<>?/\|}{~:+-]')
         for each_element in prices:
             if string_check.search(each_element) is None:

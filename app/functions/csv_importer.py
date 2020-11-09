@@ -2,27 +2,32 @@ import logging
 import pandas as pd
 import os
 import typer
+from pandas import DataFrame
+
 from config.config_parser import LocalizationProcessingSettings
 from functions.custom_preprocessors import CustomPreProcessors
+from functions.post_processing import PostProcessingFunctions
 from functions.processing_functions import ProcessingFunctions
 from helpers.helpers import GlobalSettings
 
 
-class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
+class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, PostProcessingFunctions):
 
     def __init__(self, filename: str, settings_file: str, engine=None):
         super().__init__(settings_file)
         self.filename = filename
         self.settings_file = settings_file
         self.engine = None if engine is None else engine
+        self.output_filename: str
 
         self.initial_dataframe = CustomPreProcessors.run_custom(self.country_name,
                                                                 self.make,
                                                                 self.filename,
-                                                                self.country_short) \
+                                                                self.country_short,
+                                                                self.column3_length) \
             if self.custom_settings == 1 else self.read_csv_file()
 
-    def read_csv_file(self):
+    def read_csv_file(self) -> DataFrame:
         try:
             logging.info(f"Reading CSV file: {self.filename}")
             dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, self.filename),
@@ -50,7 +55,15 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions):
         except ValueError as er:
             message = "Columns mismatch or wrong delimiter!"
             logging.critical(er)
-            logging.error(message)
+            logging.critical(message)
             typer.echo(message)
             raise typer.Exit()
+
+        except AttributeError as er_1:
+            message = "Attribute Error!"
+            logging.critical(er_1)
+            logging.critical(message)
+            typer.echo(message)
+            raise typer.Exit()
+
 

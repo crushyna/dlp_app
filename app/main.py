@@ -6,7 +6,7 @@ from functions.csv_importer import CSVProcessingObject
 from functions.excel_importer import ExcelProcessingObject
 import os
 
-__version__ = "0.3.1"
+__version__ = "0.3.5"
 
 if GlobalSettings.use_logs == 1:
     logging.basicConfig(filename=os.path.join('app/logs', 'application.log'), level=GlobalSettings.logging_level,
@@ -36,30 +36,25 @@ def main(
         )
 ):
     """
-    Entry point for application!
-    :param filename:
-    :param settings_file:
-    :param version
+    Entry point for application! Provide input filename and settings filename in order to proceed.
+    Made by: Radosław Malinowski (https://github.com/crushyna)
     """
     # check if files exits
     result = MainProgramHelper.check_if_files_exist(filename, settings_file)
     if result is True:
-
+        MainProgramHelper.remove_unused_db_files()
         typer.echo(f"Starting file processing: {filename} with settings: {settings_file}")
         logging.info(f"===> Starting file processing: {filename} with settings: {settings_file}")
 
         if filename.lower().endswith(('.xls', '.xlsx', '.xlsm', '.odf', '.ods', '.odt')):
-            typer.echo("Processing...")
             logging.debug("Using xlrd engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='xlrd')
 
         elif filename.lower().endswith('.xlsb'):
-            typer.echo("Processing...")
             logging.debug("Using pyxlsb engine")
             processed_file = ExcelProcessingObject(filename, settings_file, engine='pyxlsb')
 
         elif filename.lower().endswith(('.csv', '.txt', '.asc')):
-            typer.echo("Processing...")
             logging.debug("Using standard CSV Python engine")
             processed_file = CSVProcessingObject(filename, settings_file)
 
@@ -75,6 +70,7 @@ def main(
                 logging.critical(f"{filename} file type is not supported!")
                 raise typer.Exit()
 
+        # TODO: this has to be moved somewhere else!
         processing_list = [processed_file.drop_duplicates,
                            processed_file.drop_loops,
                            processed_file.create_prices_for_missing_ss,
@@ -86,20 +82,29 @@ def main(
                            processed_file.vat_setter,
                            processed_file.drop_duplicates]
 
-        # TODO: this has to be moved somewhere else!
-        if not hasattr(processed_file, 'save_raw'):
+        if processed_file.save_raw == 1:
+            pass
 
-            for each_function in processing_list:
-                each_function()
+        else:
+            try:
+                for each_function in processing_list:
+                    each_function()
 
-            typer.echo("Saving fixed-width file...")
+            except Exception as er:
+                typer.echo(er)
+                logging.critical(er)
+                raise typer.Exit()
+
             output_filename = processed_file.save_to_fwf_txt()
             typer.echo(processed_file.initial_dataframe)
+            typer.echo("Starting post-processing")
+            logging.info("Starting post-processing")
+            processed_file.post_update_timestamp_mark()
+            processed_file.post_set_comma_decimal_sep()
+            processed_file.post_alternative_float_column()
 
         typer.echo("Done!")
-        logging.info(f"===> {output_filename} file created.")
         logging.info(f"===> {filename} processing finished!")
-
 
     else:
         typer.echo(result)
