@@ -48,8 +48,13 @@ class MainProgramHelper:
         for root, subdirs, files in os.walk(GlobalSettings.temp_folder):
             for file in files:
                 if file.endswith("_db"):
-                    os.remove(f"{root}\\{file}")
-                    logging.warning(f"Found unused DB Files ({file}). Removed!")
+                    try:
+                        os.remove(f"{root}\\{file}")
+                        logging.warning(f"Found unused DB Files ({file}). Removed!")
+                    except Exception as er:
+                        typer.echo(er)
+                        logging.critical(er)
+                        raise typer.Exit()
 
 
 class SaveTxtHelper:
