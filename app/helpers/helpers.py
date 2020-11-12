@@ -48,8 +48,13 @@ class MainProgramHelper:
         for root, subdirs, files in os.walk(GlobalSettings.temp_folder):
             for file in files:
                 if file.endswith("_db"):
-                    os.remove(f"{root}\\{file}")
-                    logging.warning(f"Found unused DB Files ({file}). Removed!")
+                    try:
+                        os.remove(f"{root}\\{file}")
+                        logging.warning(f"Found unused DB Files ({file}). Removed!")
+                    except Exception as er:
+                        typer.echo(er)
+                        logging.critical(er)
+                        raise typer.Exit()
 
 
 class SaveTxtHelper:
@@ -87,18 +92,15 @@ class SaveTxtHelper:
                               f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%{column3_length}.{decimal_places}f"
 
-                        # TODO: this might need some fixing!
                     elif alternative_float_column == 1:
                         fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
                               f"%-{column2_length + (column3_start - column2_length) - column2_start}s" \
                               f"%-{column3_length}.{decimal_places}f"
 
-                    # FOR IR_ROVER, but does not really work as expected
                     elif alternative_float_column == 2:
                         fmt = f"%-{column1_length + (column2_start - column1_length) - column1_start}s" \
-                              f"%{column2_length}.{decimal_places}f" \
-                              f"%+{column3_start - (column2_start + column2_length) + column3_length}s"
-
+                              f"%+{column2_length}.{decimal_places}f" \
+                              f"%-{column3_length}s"
                     else:
                         message = "Unknown value of 'alternative_float_column'! Aborting!"
                         logging.critical(message)
@@ -163,16 +165,16 @@ class DataframeHelpers:
 
     @staticmethod
     def clear_loops(result_df: DataFrame, loop_prefer_higher_price: int) -> Tuple[DataFrame, DataFrame]:
-        # TODO: write description
         """
         Function for finding and clearing loops.
         How does it work?
+        It's quite complicated and I'm pretty sure that it can be done better.
+        If you have any suggestion and idea how to fix it, feel free to contact me.
 
-        :param result_df:
-        :param loop_prefer_higher_price:
-        :return: Tuple[DataFrame, DataFrame
+        :param result_df: DataFrame
+        :param loop_prefer_higher_price: int
+        :return: Tuple[DataFrame, DataFrame]
         """
-        # TODO: this may require some cleaning
         fixed_dataframe = pd.DataFrame(columns=result_df.columns)
         exclusion_dataframe = pd.DataFrame(columns=result_df.columns)
         for each_index, each_row in result_df.iterrows():
@@ -205,7 +207,7 @@ class DataframeHelpers:
     @staticmethod
     def check_if_series_contain_special_chars(prices: Series) -> bool:
         """
-        currently not used
+        CURRENTLY NOT USED
         :param prices:
         :return: bool
         """
