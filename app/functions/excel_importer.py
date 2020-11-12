@@ -14,6 +14,9 @@ from helpers.helpers import GlobalSettings
 
 
 class ExcelProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, PostProcessingFunctions):
+    """
+    Function for reading Excel-based files.
+    """
 
     def __init__(self, filename: str, settings_file: str, engine: str):
         super().__init__(settings_file)

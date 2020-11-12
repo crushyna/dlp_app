@@ -5,6 +5,9 @@ from helpers.helpers import SaveTxtHelper, GlobalSettings
 
 
 class PostProcessingFunctions:
+    """
+    Post-processing functions: for changes that are done AFTER the file is processed and exported to text file.
+    """
     initial_dataframe: object
 
     def post_update_timestamp_mark(self):
@@ -24,5 +27,6 @@ class PostProcessingFunctions:
             logging.debug("Replacing '+' with empty character")
             SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, self.output_filename), "+", " ")
 
+    #TODO: save_raw!
     def save_raw(self):
         pass

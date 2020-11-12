@@ -12,6 +12,9 @@ from helpers.helpers import GlobalSettings
 
 
 class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, PostProcessingFunctions):
+    """
+    Function for reading CSV or text-based files.
+    """
 
     def __init__(self, filename: str, settings_file: str, engine=None):
         super().__init__(settings_file)
