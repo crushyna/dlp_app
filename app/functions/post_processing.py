@@ -18,6 +18,8 @@ class PostProcessingFunctions:
                                          f'PriceL{self.current_timestamp}')
 
     def post_set_comma_decimal_sep(self):
+        # TODO: change it, so it will only replace dots within a specific range of characters
+        # (ex. characters 50 - 80 in each line)
         if self.set_comma_decimal_sep == 1:
             logging.debug("Replacing decimal separator")
             SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, self.output_filename), ".", ",")
@@ -27,6 +29,6 @@ class PostProcessingFunctions:
             logging.debug("Replacing '+' with empty character")
             SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, self.output_filename), "+", " ")
 
-    #TODO: save_raw!
+    # TODO: save_raw!
     def save_raw(self):
         pass
