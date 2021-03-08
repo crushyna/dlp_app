@@ -197,6 +197,7 @@ class ProcessingFunctions:
             '''
 
             if self.force_price_as_string == 0:
+                output_dataframe.price = output_dataframe.price.astype(float)
                 output_dataframe.price = pd.to_numeric(output_dataframe.price)
                 output_dataframe.price = output_dataframe.price.round(
                     self.decimal_places)
