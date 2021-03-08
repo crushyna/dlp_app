@@ -51,6 +51,7 @@ class CSVProcessingObject(LocalizationProcessingSettings, ProcessingFunctions, P
             # change price strings to floats
             logging.debug(f"{self.filename}: changing price to floats")
             dataframe.price = dataframe.price.str.replace(",", ".")
+            dataframe.price = dataframe.price.str.replace('"', "")
             dataframe.price = pd.to_numeric(dataframe.price)
 
             return dataframe

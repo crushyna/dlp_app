@@ -147,10 +147,10 @@ class SaveTxtHelper:
     @staticmethod
     def remove_unwanted_characters(dataframe: object, characters_to_remove: tuple):
         for each_character in characters_to_remove:
-            if each_character in dataframe.part_no:
-                dataframe.part_no = dataframe.part_no.str.replace(each_character, "")
+            dataframe.part_no = dataframe.part_no.str.replace(each_character, "")
 
-            elif each_character in dataframe.ss:
+        if 'ss' in dataframe.columns:
+            for each_character in characters_to_remove:
                 dataframe.ss = dataframe.ss.str.replace(each_character, "")
 
         return dataframe

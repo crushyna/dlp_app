@@ -279,6 +279,9 @@ class CustomPreProcessors:
         dataframe.Surcharge = dataframe.Surcharge.replace(nan, '0.00', regex=True)
         dataframe["Standard Pric"] = pd.to_numeric(dataframe["Standard Pric"])
         dataframe["Standard Pric"] = dataframe["Standard Pric"].round(2)
+
+        dataframe["Surcharge"] = pd.to_numeric(dataframe["Surcharge"])
+        dataframe["Surcharge"] = dataframe["Surcharge"].round(2)
         dataframe["Superseded By"] = dataframe["Superseded By"].replace(nan, '', regex=True)
 
         savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
