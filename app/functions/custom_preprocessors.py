@@ -81,7 +81,7 @@ class CustomPreProcessors:
                 return CustomPreProcessors.australia_subaru(filename)
 
             elif country_name == "Bahrain" and make == "Toyota":
-                return CustomPreProcessors.bahrain_toyota(filename)
+                return CustomPreProcessors.bahrain_toyota(filename, country_short, make)
 
             elif country_name == "United Kingdom" and make == "PSA":
                 return CustomPreProcessors.unitedkingdom_psa(filename)
@@ -373,32 +373,19 @@ class CustomPreProcessors:
     #     return dataframe
 
     @classmethod
-    def bahrain_toyota(cls, filename) -> DataFrame:
-        # string1 = '"'
-        # replacement1 = '*'
-        # string2 = '*,*'
-        # replacement2 = '$ '
-        # string3 = '*,'
-        # replacement3 = '$ '
-        # string4 = '*'
-        # replacement4 = ''
-        #
-        # with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
-        #     filedata = file.read()
-        #
-        # # Replace the target string
-        # filedata = filedata.replace(string1, replacement1)
-        # filedata = filedata.replace(string2, replacement2)
-        # filedata = filedata.replace(string3, replacement3)
-        # filedata = filedata.replace(string4, replacement4)
-        #
-        # # Write the file out again
-        # with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
-        #     file.write(filedata)
+    def bahrain_toyota(cls, filename: str, country_short: str, make: str) -> DataFrame:
+        from csv import QUOTE_MINIMAL
 
-        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), skiprows=1, delimiter='\t', usecols=(0, 2))
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename),
+                                skiprows=1, delimiter='\t', usecols=(0, 2))
         dataframe.columns = ('part_no', 'price')
         dataframe.price = pd.to_numeric(dataframe.price)
+
+        dataframe.to_csv(os.path.join(GlobalSettings.output_folder, cls.output_filename),
+                         header=False, index=False, float_format='%0.2f', quoting=QUOTE_MINIMAL)
 
         return dataframe
 

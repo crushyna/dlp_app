@@ -29,6 +29,11 @@ class PostProcessingFunctions:
             logging.debug("Replacing '+' with empty character")
             SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, self.output_filename), "+", " ")
 
+    def post_remove_empty_spaces(self):
+        if self.alternative_float_column != 0:
+            logging.debug("Replacing '+' with empty character")
+            SaveTxtHelper.replace_string(os.path.join(GlobalSettings.output_folder, self.output_filename), "+", " ")
+
     # TODO: save_raw!
     def save_raw(self):
         pass
