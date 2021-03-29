@@ -62,6 +62,9 @@ class CustomPreProcessors:
             elif country_name == "Australia" and make == "Porsche":
                 return CustomPreProcessors.australia_porsche(filename)
 
+            elif country_name == "Ireland" and make == "Porsche":
+                return CustomPreProcessors.ireland_porsche(filename)
+
             elif country_name == "Australia" and make == "Toyota":
                 return CustomPreProcessors.australia_toyota(filename)
 
@@ -177,6 +180,33 @@ class CustomPreProcessors:
 
         cls.partno_series = pd.Series(cls.partno_list).astype(str)
         cls.price_series = pd.Series(cls.price_list).astype(str)
+
+        dataframe = pd.DataFrame({"part_no": cls.partno_series, "price": cls.price_series})
+        os.remove(porsche_fixed)
+
+        return dataframe
+
+    @classmethod
+    def ireland_porsche(cls, filename: str) -> DataFrame:
+        porsche_file = filename
+        porsche_fixed = "porsche_ireland_tempfile"
+
+        with open(os.path.join(GlobalSettings.acquisiton_folder, porsche_file), 'r') as infile, open(porsche_fixed,
+                                                                                                     'w') as outfile:
+            content = infile.read()
+            content_new = re.sub("(.{251})", "\\1\n", content, 0, re.DOTALL)
+            outfile.write(content_new)
+
+        with open(porsche_fixed, 'r') as infile:
+            for each_line in infile:
+                each_line.strip()
+                if len(each_line) > 1:
+                    cls.partno_list.append(each_line[10:21])
+                    # cls.price_list.append(each_line[59:66])
+                    cls.price_list.append((each_line[59:64] + "." + each_line[64:66]).strip())
+
+        cls.partno_series = pd.Series(cls.partno_list).astype(str)
+        cls.price_series = pd.Series(cls.price_list).astype(float)
 
         dataframe = pd.DataFrame({"part_no": cls.partno_series, "price": cls.price_series})
         os.remove(porsche_fixed)
@@ -312,31 +342,61 @@ class CustomPreProcessors:
 
         return dataframe
 
+    # @classmethod
+    # def bahrain_toyota(cls, filename) -> DataFrame:
+    #     string1 = '"'
+    #     replacement1 = '*'
+    #     string2 = '*,*'
+    #     replacement2 = '$ '
+    #     string3 = '*,'
+    #     replacement3 = '$ '
+    #     string4 = '*'
+    #     replacement4 = ''
+    #
+    #     with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
+    #         filedata = file.read()
+    #
+    #     # Replace the target string
+    #     filedata = filedata.replace(string1, replacement1)
+    #     filedata = filedata.replace(string2, replacement2)
+    #     filedata = filedata.replace(string3, replacement3)
+    #     filedata = filedata.replace(string4, replacement4)
+    #
+    #     # Write the file out again
+    #     with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
+    #         file.write(filedata)
+    #
+    #     dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), delimiter='$', usecols=(0, 2))
+    #     dataframe.columns = ('part_no', 'price')
+    #     dataframe.price = pd.to_numeric(dataframe.price)
+    #
+    #     return dataframe
+
     @classmethod
     def bahrain_toyota(cls, filename) -> DataFrame:
-        string1 = '"'
-        replacement1 = '*'
-        string2 = '*,*'
-        replacement2 = '$ '
-        string3 = '*,'
-        replacement3 = '$ '
-        string4 = '*'
-        replacement4 = ''
+        # string1 = '"'
+        # replacement1 = '*'
+        # string2 = '*,*'
+        # replacement2 = '$ '
+        # string3 = '*,'
+        # replacement3 = '$ '
+        # string4 = '*'
+        # replacement4 = ''
+        #
+        # with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
+        #     filedata = file.read()
+        #
+        # # Replace the target string
+        # filedata = filedata.replace(string1, replacement1)
+        # filedata = filedata.replace(string2, replacement2)
+        # filedata = filedata.replace(string3, replacement3)
+        # filedata = filedata.replace(string4, replacement4)
+        #
+        # # Write the file out again
+        # with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
+        #     file.write(filedata)
 
-        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
-            filedata = file.read()
-
-        # Replace the target string
-        filedata = filedata.replace(string1, replacement1)
-        filedata = filedata.replace(string2, replacement2)
-        filedata = filedata.replace(string3, replacement3)
-        filedata = filedata.replace(string4, replacement4)
-
-        # Write the file out again
-        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
-            file.write(filedata)
-
-        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), delimiter='$', usecols=(0, 2))
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), skiprows=1, delimiter='\t', usecols=(0, 2))
         dataframe.columns = ('part_no', 'price')
         dataframe.price = pd.to_numeric(dataframe.price)
 
