@@ -27,7 +27,8 @@ class CustomPreProcessors:
     output_filename: str
 
     @staticmethod
-    def run_custom(country_name: str, make: str, filename: str, country_short: str, column_length: int) -> DataFrame or str:
+    def run_custom(country_name: str, make: str,
+                   filename: str, country_short: str, column_length: int) -> DataFrame or str:
         """
         Select custom process based on country name and car manufacturer.
         """
@@ -81,13 +82,16 @@ class CustomPreProcessors:
                 return CustomPreProcessors.australia_subaru(filename)
 
             elif country_name == "Bahrain" and make == "Toyota":
-                return CustomPreProcessors.bahrain_toyota(filename)
+                return CustomPreProcessors.bahrain_toyota(filename, country_short, make)
 
             elif country_name == "United Kingdom" and make == "PSA":
                 return CustomPreProcessors.unitedkingdom_psa(filename)
 
             elif country_name == "United Kingdom" and make == "Renault":
                 return CustomPreProcessors.unitedkingdom_renault(filename)
+
+            elif country_name == "Kuwait" and make == "BMW":
+                return CustomPreProcessors.kuwait_bmw(filename, country_short, make)
 
             else:
                 message = "Custom pre-processing settings not found!"
@@ -261,7 +265,8 @@ class CustomPreProcessors:
 
     @classmethod
     def australia_tesla(cls, filename: str, country_short: str) -> DataFrame:
-        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), names=['part_no', 'price', 'currency', 'ss'], header=0)
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename),
+                                names=['part_no', 'price', 'currency', 'ss'], header=0)
         dataframe = dataframe[['part_no', 'ss', 'price']][dataframe.ss == country_short]
 
         dataframe.part_no = dataframe.part_no.str.replace("-", "")
@@ -272,7 +277,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def australia_tesla_ss(cls, filename: str, country_short: str, make: str) -> str:
+    def australia_tesla_ss(cls, filename: str, country_short: str, make: str):
         from numpy import savetxt
         current_timestamp = datetime.now().strftime('%d%m%y')
         cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
@@ -285,18 +290,17 @@ class CustomPreProcessors:
         fmt = f"%-13s%-13s%-8s%+15s"
         header = "OldPart      NewPart      ServiceabilityModReason"
 
-        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
+        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename),
+                X=dataframe, fmt=fmt, encoding='utf-8')
 
         with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
             content = f.read()
             f.seek(0, 0)
             f.write(header)
 
-        return cls.output_filename
-
     @classmethod
-    def ireland_mgrover(cls, filename: str, country_short: str, make: str) -> str:
-        #TODO: needs total export from .xlsx file into .txt. NOT JUST WRITING CONVERSION!
+    def ireland_mgrover(cls, filename: str, country_short: str, make: str):
+        # TODO: needs total export from .xlsx file into .txt. NOT JUST WRITING CONVERSION!
         from numpy import nan, savetxt
         current_timestamp = datetime.now().strftime('%d%m%y')
         cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
@@ -314,14 +318,13 @@ class CustomPreProcessors:
         dataframe["Surcharge"] = dataframe["Surcharge"].round(2)
         dataframe["Superseded By"] = dataframe["Superseded By"].replace(nan, '', regex=True)
 
-        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename), X=dataframe, fmt=fmt, encoding='utf-8')
+        savetxt(fname=os.path.join(GlobalSettings.output_folder, cls.output_filename),
+                X=dataframe, fmt=fmt, encoding='utf-8')
 
         with open(os.path.join(GlobalSettings.output_folder, cls.output_filename), 'r+') as f:
             content = f.read()
             f.seek(0, 0)
             f.write(header)
-
-        return cls.output_filename
 
     @classmethod
     def ireland_mazda(cls, filename) -> DataFrame:
@@ -342,65 +345,37 @@ class CustomPreProcessors:
 
         return dataframe
 
-    # @classmethod
-    # def bahrain_toyota(cls, filename) -> DataFrame:
-    #     string1 = '"'
-    #     replacement1 = '*'
-    #     string2 = '*,*'
-    #     replacement2 = '$ '
-    #     string3 = '*,'
-    #     replacement3 = '$ '
-    #     string4 = '*'
-    #     replacement4 = ''
-    #
-    #     with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
-    #         filedata = file.read()
-    #
-    #     # Replace the target string
-    #     filedata = filedata.replace(string1, replacement1)
-    #     filedata = filedata.replace(string2, replacement2)
-    #     filedata = filedata.replace(string3, replacement3)
-    #     filedata = filedata.replace(string4, replacement4)
-    #
-    #     # Write the file out again
-    #     with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
-    #         file.write(filedata)
-    #
-    #     dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), delimiter='$', usecols=(0, 2))
-    #     dataframe.columns = ('part_no', 'price')
-    #     dataframe.price = pd.to_numeric(dataframe.price)
-    #
-    #     return dataframe
-
     @classmethod
-    def bahrain_toyota(cls, filename) -> DataFrame:
-        # string1 = '"'
-        # replacement1 = '*'
-        # string2 = '*,*'
-        # replacement2 = '$ '
-        # string3 = '*,'
-        # replacement3 = '$ '
-        # string4 = '*'
-        # replacement4 = ''
-        #
-        # with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
-        #     filedata = file.read()
-        #
-        # # Replace the target string
-        # filedata = filedata.replace(string1, replacement1)
-        # filedata = filedata.replace(string2, replacement2)
-        # filedata = filedata.replace(string3, replacement3)
-        # filedata = filedata.replace(string4, replacement4)
-        #
-        # # Write the file out again
-        # with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'w') as file:
-        #     file.write(filedata)
+    def bahrain_toyota(cls, filename: str, country_short: str, make: str):
+        from csv import QUOTE_MINIMAL
 
-        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename), skiprows=1, delimiter='\t', usecols=(0, 2))
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+
+        dataframe = pd.read_csv(os.path.join(GlobalSettings.acquisiton_folder, filename),
+                                skiprows=1, delimiter='\t', usecols=(0, 2))
         dataframe.columns = ('part_no', 'price')
         dataframe.price = pd.to_numeric(dataframe.price)
 
-        return dataframe
+        dataframe.to_csv(os.path.join(GlobalSettings.output_folder, cls.output_filename),
+                         header=False, index=False, float_format='%0.2f', quoting=QUOTE_MINIMAL)
+
+    @classmethod
+    def kuwait_bmw(cls, filename: str, country_short: str, make: str):
+        with open(os.path.join(GlobalSettings.acquisiton_folder, filename), 'r') as file:
+            filedata = file.read()
+
+        # Replace the target string
+        filedata = filedata.replace('","', ";")
+        filedata = filedata.replace('",', '')
+        filedata = filedata.replace(";", '", ')
+
+        # Write the file out again
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        new_filename = f"{country_short}_{make}_{current_timestamp}.csv"
+
+        with open(os.path.join(GlobalSettings.output_folder, new_filename), 'w') as file:
+            file.write(filedata)
 
     @classmethod
     def unitedkingdom_psa(cls, filename) -> DataFrame:
@@ -465,7 +440,7 @@ class CustomPreProcessors:
         return dataframe
 
     @classmethod
-    def ireland_tesla_ss(cls, filename, country_short, make) -> str:
+    def ireland_tesla_ss(cls, filename, country_short, make):
         from numpy import savetxt
         current_timestamp = datetime.now().strftime('%d%m%y')
         cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
@@ -486,8 +461,6 @@ class CustomPreProcessors:
             f.seek(0, 0)
             f.write(header)
 
-        return cls.output_filename
-
     @classmethod
     def australia_subaru(cls, filename) -> DataFrame:
         import numpy as np
@@ -502,3 +475,31 @@ class CustomPreProcessors:
         dataframe.ss = dataframe.ss.astype(str)
 
         return dataframe
+
+    @classmethod
+    def egypt_mercedes(cls, filename, country_short, make):
+        import csv
+        import codecs
+
+        mercedes_file = filename
+        mercedes_file_converted = f"{filename}_temp"
+        current_timestamp = datetime.now().strftime('%d%m%y')
+        cls.output_filename = f"{country_short}_{make}_{current_timestamp}.txt"
+
+        BLOCKSIZE = 1048576  # or some other, desired size in bytes
+        with codecs.open(mercedes_file, "r", "utf-16") as sourceFile:
+            with codecs.open(mercedes_file_converted, "w", "utf-8") as targetFile:
+                while True:
+                    contents = sourceFile.read(BLOCKSIZE)
+                    if not contents:
+                        break
+                    targetFile.write(contents)
+
+        dataframe = pd.read_csv(mercedes_file_converted, sep='\t', skiprows=0, header=0, dtype='str')
+        dataframe['part_no'] = dataframe['SC'] + dataframe['PartNo']
+        dataframe['part_no'] = dataframe['part_no'].str.strip()
+        dataframe['price'] = dataframe['Sales Price'].astype(float)
+        dataframe = dataframe[['part_no', 'price']]
+
+        dataframe.to_csv(os.path.join(GlobalSettings.output_folder, cls.output_filename),
+                         header=False, index=False, float_format='%0.2f', quoting=csv.QUOTE_MINIMAL)
